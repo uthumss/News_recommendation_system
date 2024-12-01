@@ -66,16 +66,26 @@ public class NewsRecoDriver {
 
 
     private static void createAccount(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
+        while (true) {
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine();
 
-        User user = new User(username, password);
-        user.setDatabaseManager(dbManager); // Set DatabaseManager for User
-        system.addUser(user);
-        dbManager.saveUser(username, password, "user");
-        System.out.println("User account created.");
+            // Check if the username already exists
+            if (dbManager.isUsernameTaken(username)) {
+                System.out.println("Username already exists. Please choose a different username.");
+                continue;
+            }
+
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
+
+            User user = new User(username, password);
+            user.setDatabaseManager(dbManager); // Set DatabaseManager for User
+            system.addUser(user);
+            dbManager.saveUser(username, password, "user");
+            System.out.println("User account created.");
+            break;
+        }
     }
 
 

@@ -28,6 +28,23 @@ public class DatabaseManager {
         }
     }
 
+    // Method to check whether username already exist in database
+    public boolean isUsernameTaken(String username) {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Return true if the count is greater than 0
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking username existence: " + e.getMessage());
+        }
+        return false; // Return false if an error occurs
+    }
+
+
     // Load all users from the database
     public List<User> loadUsers() {
         List<User> users = new ArrayList<>();
