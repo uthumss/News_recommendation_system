@@ -255,4 +255,29 @@ public class DatabaseManager {
         }
     }
 
+    // To delete a user from the database
+    public void deleteUserFromDatabase(String username) {
+        String[] tables = {
+                "user_skipped_articles",
+                "user_read_articles",
+                "user_liked_articles",
+                "user_preferences",
+                "users"
+        };
+
+        try (Connection conn = connect()) {
+            for (String table : tables) {
+                String sql = "DELETE FROM " + table + " WHERE username = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, username);
+                    pstmt.executeUpdate();
+                }
+            }
+            System.out.println("User " + username + " and all associated data have been removed from the database.");
+        } catch (SQLException e) {
+            System.err.println("Error removing user from the database: " + e.getMessage());
+        }
+    }
+
+
 }

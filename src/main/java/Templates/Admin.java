@@ -24,7 +24,14 @@ public class Admin extends User {
             users.remove(userToRemove);
         }
 
-        System.out.println("User " + username + " has been removed.");
+        // Remove User from database
+        if (dbmanager != null){
+            dbmanager.deleteUserFromDatabase(username);
+        }
+        else{
+            System.out.println("Database not initialized.");
+        }
+
     }
 
     // Method to delete an article

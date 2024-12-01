@@ -11,7 +11,7 @@ public class User {
     private List<String> likedArticles;
     private List<String> skippedArticles;
     private List<String> preferences;
-    private DatabaseManager dbmanager;
+    protected DatabaseManager dbmanager;
 
     public User(String username, String password) {
         this.username = username;
