@@ -197,6 +197,37 @@ public class DatabaseManager {
         return likedArticles;
     }
 
+    // Method to view liked articles of the relevant user
+    public List<Article> viewLikedArticles(String username) {
+        List<Article> likedArticles = new ArrayList<>();
+        String sql = """
+        SELECT a.article_id, a.headline, a.description, a.link, a.category
+        FROM user_liked_articles ul
+        JOIN articles a ON ul.article_id = a.article_id
+        WHERE ul.username = ?
+    """;
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Article article = new Article(
+                        rs.getString("article_id"),
+                        rs.getString("headline"),
+                        rs.getString("description"),
+                        rs.getString("link")
+                );
+                article.setCategory(rs.getString("category"));
+                likedArticles.add(article);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching liked articles: " + e.getMessage());
+        }
+        return likedArticles;
+    }
+
+
     // Save read articles to database
     public void saveReadArticle(String username, String articleId) {
         String sql = "INSERT OR IGNORE INTO user_read_articles(username, article_id) VALUES(?, ?)";

@@ -35,6 +35,7 @@ public class NewsRecoDriver {
 
         while (true) {
             try {
+                clearConsole();
                 System.out.println("Enter Command ");
                 System.out.println();
                 System.out.println("1 for Create Account");
@@ -44,6 +45,7 @@ public class NewsRecoDriver {
 
                 int command = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
+                clearConsole();
 
                 if (command == 1) {
                     createAccount(system, dbManager, scanner);
@@ -83,6 +85,7 @@ public class NewsRecoDriver {
             user.setDatabaseManager(dbManager); // Set DatabaseManager for User
             system.addUser(user);
             dbManager.saveUser(username, password, "user");
+            clearConsole();
             System.out.println("User account created.");
             break;
         }
@@ -95,6 +98,7 @@ public class NewsRecoDriver {
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
+        clearConsole();
 
         // Check for predefined admins
         if (("admin1".equals(username) && "123".equals(password)) ||
@@ -167,6 +171,7 @@ public class NewsRecoDriver {
             System.out.println("3 - Logout");
             int choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
+            clearConsole();
 
             if (choice == 1) {
                 getRecommendations(user, system, dbManager, scanner);
@@ -270,9 +275,11 @@ public class NewsRecoDriver {
             System.out.println("Manage Profile:");
             System.out.println("1 - Add Preferred Category");
             System.out.println("2 - Remove Preferred Category");
-            System.out.println("3 - Back to User Menu");
+            System.out.println("3 - View Liked Articles");
+            System.out.println("4 - Back to User Menu");
             int choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
+            clearConsole();
 
             if (choice == 1) {
                 // Show the user valid categories and their current preferences
@@ -288,6 +295,7 @@ public class NewsRecoDriver {
 
                 System.out.println("Enter categories to add (comma-separated if multiple):");
                 String input = scanner.nextLine().trim().toLowerCase();
+                clearConsole();
                 String[] categoriesToAdd = input.split(",");
 
                 for (String category : categoriesToAdd) {
@@ -325,7 +333,31 @@ public class NewsRecoDriver {
                     user.syncToDatabase(dbManager); // Sync changes
                 }
 
-            } else if (choice == 3) {
+            }  else if (choice == 3) {
+                // Display liked articles
+                List<Article> likedArticles = dbManager.viewLikedArticles(user.getUsername());
+                if (likedArticles.isEmpty()) {
+                    System.out.println("You have no liked articles.");
+                } else {
+                    System.out.println("Liked Articles:");
+                    for (int i = 0; i < likedArticles.size(); i++) {
+                        System.out.println((i + 1) + " - " + likedArticles.get(i).getTitle());
+                    }
+                    System.out.println("Enter the number of the article to open its link, or 0 to go back:");
+                    int articleChoice = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline
+
+                    if (articleChoice > 0 && articleChoice <= likedArticles.size()) {
+                        Article selectedArticle = likedArticles.get(articleChoice - 1);
+                        openLinkInBrowser(selectedArticle.getLink());
+                    } else if (articleChoice == 0) {
+                        System.out.println("Returning to Manage Profile...");
+                    } else {
+                        System.out.println("Invalid selection.");
+                    }
+                }
+
+            } else if (choice == 4) {
                 break;
             } else {
                 System.out.println("Invalid option.");
@@ -468,6 +500,13 @@ public class NewsRecoDriver {
             System.out.println("Duplicate articles removed successfully.");
         } catch (Exception e) {
             System.err.println("Error removing duplicate articles: " + e.getMessage());
+        }
+    }
+
+    // Method to print blank lines to simulate clearing the console
+    private static void clearConsole() {
+        for (int i = 0; i < 50; i++) { // Adjust the number as needed for your screen
+            System.out.println();
         }
     }
 
