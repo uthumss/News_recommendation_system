@@ -29,7 +29,6 @@ public class NewsRecoDriver {
 //        dbManager.createUsersTableIfNotExists(); // For Users
 //        dbManager.createTableIfNotExists(); // For articles
 
-        loadUsersFromDatabase(system, dbManager); // Load users from the database
         loadArticlesFromDB(dbManager, system); // Load articles from database
 
         while (true) {
@@ -494,25 +493,6 @@ public class NewsRecoDriver {
         }
     }
 
-
-
-    private static void loadUsersFromDatabase(NewsRecommendationModel system, DatabaseManager dbManager) {
-        List<User> users = dbManager.loadUsers();
-        for (User user : users) {
-            user.loadFromDatabase(dbManager); // Load preferences and articles
-            system.addUser(user);
-        }
-        System.out.println("Users loaded from the database.");
-    }
-
-    private static void removeDuplicateArticles(DatabaseManager dbManager) {
-        try {
-            dbManager.removeDuplicateArticles();
-            System.out.println("Duplicate articles removed successfully.");
-        } catch (Exception e) {
-            System.err.println("Error removing duplicate articles: " + e.getMessage());
-        }
-    }
 
     // Method to print blank lines to simulate clearing the console
     private static void clearConsole() {

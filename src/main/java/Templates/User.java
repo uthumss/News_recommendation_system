@@ -107,12 +107,6 @@ public class User {
         return dbmanager;
     }
 
-    // Method to load liked articles, read articles and preferences from the database
-    public void loadFromDatabase(DatabaseManager dbManager) {
-//        this.preferences.addAll(dbManager.getUserPreferences(this.username));
-        this.likedArticles.addAll(dbManager.getLikedArticles(this.username));
-        this.readArticles.addAll(dbManager.getReadArticles(this.username));
-    }
 
     // Method to sync the user details to database
     public void syncToDatabase(DatabaseManager dbManager) {
