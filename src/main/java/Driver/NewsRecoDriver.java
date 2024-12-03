@@ -188,7 +188,7 @@ public class NewsRecoDriver {
             } else if (choice == 2) {
                 manageProfile(user, dbManager, scanner);
             } else if (choice == 3) {
-                logoutUser(user, dbManager);
+                System.out.println("Logging out...");
                 break;
             } else {
                 System.out.println("❗ Invalid option");
@@ -424,16 +424,6 @@ public class NewsRecoDriver {
             System.err.println("Error opening link: " + e.getMessage());
         }
     }
-
-
-
-
-    private static void logoutUser(User user, DatabaseManager dbManager) {
-        System.out.println("Logging out...");
-        user.syncToDatabase(dbManager);
-    }
-
-
 
 
     private static void loadInitialArticles(NewsFetcher newsFetcher, ArticleClassifier classifier, DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {

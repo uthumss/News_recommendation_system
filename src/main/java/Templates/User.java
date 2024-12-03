@@ -102,10 +102,6 @@ public class User {
         this.dbmanager = dbmanager;
     }
 
-    // Method to get the relevant database manager
-    public DatabaseManager getDatabaseManager() {
-        return dbmanager;
-    }
 
 
     // Method to sync the user details to database
