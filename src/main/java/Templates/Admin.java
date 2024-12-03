@@ -27,9 +27,10 @@ public class Admin extends User {
         // Remove User from database
         if (dbmanager != null){
             dbmanager.deleteUserFromDatabase(username);
+            System.out.println("✅ " + username + " has been removed from the system.");
         }
         else{
-            System.out.println("Database not initialized.");
+            System.out.println("‼\uFE0F Database not initialized.");
         }
 
     }
@@ -50,7 +51,7 @@ public class Admin extends User {
             articles.remove(articleToRemove);
         }
 
-        System.out.println("Article with ID " + articleId + " has been removed.");
+        System.out.println("✅ Article with ID " + articleId + " has been removed.");
     }
 
 }

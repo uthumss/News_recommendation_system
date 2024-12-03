@@ -15,8 +15,7 @@ import Templates.User;
 
 public class NewsRecoDriver {
     private static final Set<String> VALID_CATEGORIES = Set.of(
-            "technology", "health", "sports", "business", "politics", "entertainment",
-            "science", "education", "lifestyle", "weather", "general");
+            "technology", "health", "sports", "business", "politics", "entertainment", "education", "lifestyle", "weather", "general");
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -36,11 +35,11 @@ public class NewsRecoDriver {
         while (true) {
             try {
                 clearConsole();
-                System.out.println("Enter Command ");
+                System.out.println("Enter Command ⬇\uFE0F");
                 System.out.println();
-                System.out.println("1 for Create Account");
-                System.out.println("2 for Login");
-                System.out.println("3 to Exit");
+                System.out.println("\uD83D\uDD39 1 for Create Account");
+                System.out.println("\uD83D\uDD39 2 for Login");
+                System.out.println("\uD83D\uDD39 3 to Exit");
                 System.out.print(">");
 
                 int command = scanner.nextInt();
@@ -49,16 +48,21 @@ public class NewsRecoDriver {
 
                 if (command == 1) {
                     createAccount(system, dbManager, scanner);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        System.out.println("‼\uFE0F Timer interrupted: " + e.getMessage());
+                    }
                 } else if (command == 2) {
                     login(system, dbManager, scanner, newsFetcher, classifier);
                 } else if (command == 3) {
-                    System.out.println("Exiting application...");
+                    System.out.println("\uD83D\uDED1 Exiting application...");
                     break;
                 } else {
-                    System.out.println("Invalid command, try again.");
+                    System.out.println("❗ Invalid command, try again.");
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Invalid input. Please enter a number");
+                System.out.println("❗ Invalid input. Please enter a number");
                 scanner.nextLine(); // Clear the invalid input
             }
         }
@@ -69,24 +73,23 @@ public class NewsRecoDriver {
 
     private static void createAccount(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
         while (true) {
-            System.out.print("Enter username: ");
+            System.out.print("\uD83D\uDD37 Enter username: ");
             String username = scanner.nextLine();
 
             // Check if the username already exists
             if (dbManager.isUsernameTaken(username)) {
-                System.out.println("Username already exists. Please choose a different username.");
+                System.out.println("❗Username already exists. Please choose a different username.");
                 continue;
             }
 
-            System.out.print("Enter password: ");
+            System.out.print("\uD83D\uDD37 Enter password: ");
             String password = scanner.nextLine();
 
             User user = new User(username, password);
             user.setDatabaseManager(dbManager); // Set DatabaseManager for User
             system.addUser(user);
             dbManager.saveUser(username, password, "user");
-            clearConsole();
-            System.out.println("User account created.");
+            System.out.println("✅ User account created");
             break;
         }
     }
@@ -94,9 +97,9 @@ public class NewsRecoDriver {
 
 
     private static void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, ArticleClassifier classifier) {
-        System.out.print("Enter username: ");
+        System.out.print("\uD83D\uDD37 Enter username: ");
         String username = scanner.nextLine();
-        System.out.print("Enter password: ");
+        System.out.print("\uD83D\uDD37 Enter password: ");
         String password = scanner.nextLine();
         clearConsole();
 
@@ -117,7 +120,7 @@ public class NewsRecoDriver {
         // Authenticate regular users
         User user = dbManager.authenticateUser(username, password);
         if (user == null) {
-            System.out.println("Invalid login credentials.");
+            System.out.println("❗ Invalid login credentials.");
             return;
         }
 
@@ -134,20 +137,24 @@ public class NewsRecoDriver {
 
     private static void adminMenu(Admin admin, NewsRecommendationModel system, Scanner scanner, NewsFetcher newsFetcher, ArticleClassifier classifier, DatabaseManager dbManager) {
         while (true) {
-            System.out.println("Admin Menu:");
-            System.out.println("1 - Delete User");
-            System.out.println("2 - Remove Article");
-            System.out.println("3 - Fetch More Articles");
-            System.out.println("4 - Logout");
+            System.out.println("Welcome " + admin.getUsername() + "!");
+            System.out.println();
+            System.out.println("Admin Menu ⬇\uFE0F");
+            System.out.println("\uD83D\uDD39 1 - Delete User");
+            System.out.println("\uD83D\uDD39 2 - Remove Article");
+            System.out.println("\uD83D\uDD39 3 - Fetch More Articles");
+            System.out.println("\uD83D\uDD39 4 - Logout");
+            System.out.print(">");
+
             int choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
             if (choice == 1) {
-                System.out.println("Enter username to delete:");
+                System.out.println("\uD83D\uDD37 Enter username to delete:");
                 String username = scanner.nextLine();
                 admin.removeUser(system.getUsers(), username);
             } else if (choice == 2) {
-                System.out.println("Enter article ID to delete:");
+                System.out.println("\uD83D\uDD37 Enter article ID to delete:");
                 String articleId = scanner.nextLine();
                 admin.deleteArticle(system.getArticles(), articleId);
             } else if (choice == 3) {
@@ -156,7 +163,7 @@ public class NewsRecoDriver {
                 System.out.println("Logging out...");
                 break;
             } else {
-                System.out.println("Invalid option.");
+                System.out.println("❗Invalid option.");
             }
         }
     }
@@ -165,10 +172,14 @@ public class NewsRecoDriver {
 
     private static void userMenu(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
         while (true) {
-            System.out.println("User Menu:");
-            System.out.println("1 - Get Recommendations");
-            System.out.println("2 - Manage Profile");
-            System.out.println("3 - Logout");
+            System.out.println("Welcome " + user.getUsername() + "!");
+            System.out.println();
+            System.out.println("User Menu ⬇\uFE0F");
+            System.out.println("\uD83D\uDD39 1 - Get Recommendations");
+            System.out.println("\uD83D\uDD39 2 - Manage Profile");
+            System.out.println("\uD83D\uDD39 3 - Logout");
+            System.out.print(">");
+
             int choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
             clearConsole();
@@ -181,7 +192,7 @@ public class NewsRecoDriver {
                 logoutUser(user, dbManager);
                 break;
             } else {
-                System.out.println("Invalid option.");
+                System.out.println("❗ Invalid option");
             }
         }
     }
@@ -216,17 +227,17 @@ public class NewsRecoDriver {
             int currentIndex = 0;
             int skippedCount = 0; // Track skipped articles
             while (currentIndex < recommendations.size()) {
-                System.out.println("Recommendations:");
+                System.out.println("Recommendations ⬇\uFE0F");
 
                 // Show 3 recommendations at a time
                 for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
                     Article article = recommendations.get(currentIndex + i);
-                    System.out.println((i + 1) + " - " + article.getTitle());
+                    System.out.println("\uD83D\uDD39 " + (i + 1) + " - " + article.getTitle());
                 }
 
-                System.out.println("4 - See Other Recommendations");
-                System.out.println("5 - Back to Menu");
-                System.out.print("Enter your choice: ");
+                System.out.println("\uD83D\uDD39 4 - See Other Recommendations");
+                System.out.println("\uD83D\uDD39 5 - Back to Menu");
+                System.out.print("➡\uFE0F Enter your choice: ");
                 int action = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
 
@@ -236,7 +247,7 @@ public class NewsRecoDriver {
                         Article selectedArticle = recommendations.get(selectedIndex);
                         handleArticleInteraction(user, selectedArticle, dbManager, scanner);
                     } else {
-                        System.out.println("Invalid selection. Try again.");
+                        System.out.println("❗ Invalid selection. Try again.");
                     }
                 } else if (action == 4) {
                     for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
@@ -249,7 +260,7 @@ public class NewsRecoDriver {
                     System.out.println("Returning to menu...");
                     break;
                 } else {
-                    System.out.println("Invalid choice. Try again.");
+                    System.out.println("❗\uFE0F Invalid choice. Try again.");
                 }
 
                 if (skippedCount >= 3) {
@@ -373,8 +384,10 @@ public class NewsRecoDriver {
 
         while (true) {
             try {
-                System.out.println("Options: 1-Like, 2-Back to Recommendations");
-                System.out.print("Enter your choice: ");
+                System.out.println("Options ⬇\uFE0F");
+                System.out.println("❤\uFE0F 1-Like");
+                System.out.println("↩\uFE0F 2-Return to Recommendations");
+                System.out.print("> ");
                 int action = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
 
@@ -448,8 +461,6 @@ public class NewsRecoDriver {
             // Proceed with fetching articles
             List<Article> articles = newsFetcher.fetchArticles(query);
             for (Article article : articles) {
-                String category = classifier.classifyArticle(article.getDescription());
-                article.setCategory(category);
                 dbManager.saveArticle(article);
                 system.addArticle(article);
             }

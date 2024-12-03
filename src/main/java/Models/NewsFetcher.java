@@ -97,6 +97,7 @@ public class NewsFetcher {
                 articles.add(article);
             }
         }
+        classifier.shutdown();
 
         return articles;
     }

@@ -1,25 +1,28 @@
 package Models;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class ArticleClassifier {
+    // ExecutorService for concurrent classification
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
     // Define keywords for each category
     private static final Map<String, String[]> CATEGORY_KEYWORDS = new HashMap<>();
 
     static {
-        CATEGORY_KEYWORDS.put("Business", new String[]{"investment", "capital", "startups", "business", "market", "company"});
-        CATEGORY_KEYWORDS.put("Sports", new String[]{"game", "team", "match", "player", "score", "sports"});
-        CATEGORY_KEYWORDS.put("Health", new String[]{"health", "coronavirus", "fitness", "disease", "ECG", "vaccine"});
-        CATEGORY_KEYWORDS.put("Technology", new String[]{"technology", "app", "robot", "software", "device", "AI", "innovation"});
-        CATEGORY_KEYWORDS.put("Social Media", new String[]{"social media", "TikTok", "Instagram", "YouTube", "Facebook", "social"});
-        CATEGORY_KEYWORDS.put("Politics", new String[]{"election", "government", "policy", "politics", "law", "politician"});
-        CATEGORY_KEYWORDS.put("Weather", new String[]{"weather", "storm", "forecast", "climate", "rain", "snow"});
-        CATEGORY_KEYWORDS.put("Lifestyle", new String[]{"fashion", "lifestyle", "culture", "home", "food", "living"});
-        CATEGORY_KEYWORDS.put("Entertainment", new String[]{"movie", "music", "celebrity", "show", "television", "performance"});
-        CATEGORY_KEYWORDS.put("Education", new String[]{"education", "school", "university", "learning", "classroom"});
-        CATEGORY_KEYWORDS.put("Crime", new String[]{"murder", "homicide", "crime", "robbery", "theft", "criminal"});
-        CATEGORY_KEYWORDS.put("General", new String[]{"general", "miscellaneous", "other", "news", "update"});
+        CATEGORY_KEYWORDS.put("business", new String[]{"investment", "capital", "startups", "business", "market", "company"});
+        CATEGORY_KEYWORDS.put("sports", new String[]{"game", "team", "match", "player", "score", "sports"});
+        CATEGORY_KEYWORDS.put("health", new String[]{"health", "coronavirus", "fitness", "disease", "ECG", "vaccine"});
+        CATEGORY_KEYWORDS.put("technology", new String[]{"technology", "app", "robot", "software", "device", "AI", "innovation"});
+        CATEGORY_KEYWORDS.put("politics", new String[]{"election", "government", "policy", "politics", "law", "politician"});
+        CATEGORY_KEYWORDS.put("weather", new String[]{"weather", "storm", "forecast", "climate", "rain", "snow"});
+        CATEGORY_KEYWORDS.put("lifestyle", new String[]{"fashion", "lifestyle", "culture", "home", "food", "living"});
+        CATEGORY_KEYWORDS.put("entertainment", new String[]{"movie", "music", "celebrity", "show", "television", "performance"});
+        CATEGORY_KEYWORDS.put("education", new String[]{"education", "school", "university", "learning", "classroom"});
     }
 
     // Classify the article based on the description
@@ -31,7 +34,7 @@ public class ArticleClassifier {
         }
 
         // Setting up a score for each category to determine which category an article belongs to
-        Map<String, Integer> categoryScores = getStringIntegerMap(description);
+        Map<String, Integer> categoryScores = getConcurrentCategoryScores(description);
 
         // Find the category with the highest score
         String bestCategory = "General";
@@ -69,4 +72,41 @@ public class ArticleClassifier {
         }
         return categoryScores;
     }
+
+    // Concurrently calculate scores for all categories
+    private Map<String, Integer> getConcurrentCategoryScores(String description) {
+        Map<String, Integer> categoryScores = new ConcurrentHashMap<>();
+        List<Callable<Void>> tasks = new ArrayList<>();
+
+        for (Map.Entry<String, String[]> entry : CATEGORY_KEYWORDS.entrySet()) {
+            String category = entry.getKey();
+            String[] keywords = entry.getValue();
+
+            tasks.add(() -> {
+                int score = 0;
+                String lowerCaseDescription = description.toLowerCase();
+                for (String keyword : keywords) {
+                    if (lowerCaseDescription.contains(keyword)) {
+                        score++;
+                    }
+                }
+                categoryScores.put(category, score);
+                return null;
+            });
+        }
+
+        try {
+            executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            System.err.println("Error during concurrent classification: " + e.getMessage());
+        }
+
+        return categoryScores;
+    }
+
+    public void shutdown() {
+        executorService.shutdown();
+    }
+
+
 }
