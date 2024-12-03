@@ -37,7 +37,7 @@ public class NewsRecommendationModel {
     // To recommend articles for a user based on their preferences and interactions with articles
     public Future<List<Article>> recommendArticles(User user) {
         return executorService.submit(() -> {
-            List<Article> recommendations = new ArrayList<>(); // To store recommended articles
+            List<Article> recommendations = new ArrayList<>();
             Map<String, Integer> termFrequency = new HashMap<>();
             Set<String> vocabulary = new HashSet<>();
 
@@ -76,32 +76,51 @@ public class NewsRecommendationModel {
                 readArticleVectors.add(articleVectors.get(read));
             }
 
-            // Filter and score articles for recommendations
+            // 1. Check for articles that belong to both the preferred category and liked articles
             for (Article article : articles) {
-                // Exclude articles already read, skipped, or not matching user preferences
-                if (!user.getReadArticles().contains(article.getId()) && // Exclude read articles
-                        !skippedArticles.contains(article.getId()) &&  // Exclude skipped articles
-                        user.getPreferences().contains(article.getCategory()) &&  // Match preferences
-                        recommendations.stream().noneMatch(a -> a.getId().equals(article.getId()))) {  // Avoid duplicates
+                if (skippedArticles.contains(article.getId())) {
+                    continue;  // Skip articles already skipped
+                }
+
+                // Check if article belongs to the preferred category AND is liked
+                if (user.getPreferences().contains(article.getCategory()) && likedArticles.contains(article)) {
                     RealVector articleVector = articleVectors.get(article);
-                    double score = calculateAverageSimilarity(likedArticleVectors, articleVector); // Calculate similarity score
+                    double score = calculateAverageSimilarity(likedArticleVectors, articleVector);
                     if (score > 0) {
-                        recommendations.add(article); // Add article to recommendations if it has a positive score
+                        recommendations.add(article);  // Add article to recommendations if it has a positive score
                     }
                 }
             }
 
-            // If no preferences, recommend from "General" category
+            // 2. If no recommendations found, check for articles that match the preferred category
             if (recommendations.isEmpty()) {
                 for (Article article : articles) {
-                    if (!skippedArticles.contains(article.getId()) && // Exclude skipped articles
-                            article.getCategory().equalsIgnoreCase("General")) {
+                    if (skippedArticles.contains(article.getId())) {
+                        continue;  // Skip articles already skipped
+                    }
+
+                    // Only recommend articles from preferred category
+                    if (user.getPreferences().contains(article.getCategory())) {
                         recommendations.add(article);
                     }
                 }
             }
 
-            // Sort recommendations by similarity score, descending order
+            // 3. If no recommendations from "General", consider similarity with liked articles
+            if (recommendations.isEmpty()) {
+                for (Article article : articles) {
+                    if (!skippedArticles.contains(article.getId()) && article.getCategory().equalsIgnoreCase("General")) {
+                        // Compare the article to the liked articles
+                        RealVector articleVector = articleVectors.get(article);
+                        double score = calculateAverageSimilarity(likedArticleVectors, articleVector);
+                        if (score > 0) {
+                            recommendations.add(article);  // Add article to recommendations if it has a positive similarity score
+                        }
+                    }
+                }
+            }
+
+            // Sort recommendations by similarity score (highest first)
             recommendations.sort(Comparator.comparingDouble(a -> -calculateAverageSimilarity(
                     likedArticles.stream().map(articleVectors::get).toList(),
                     articleVectors.get(a)
@@ -110,7 +129,6 @@ public class NewsRecommendationModel {
             return recommendations;
         });
     }
-
 
     // Calculate TF-IDF vector for an article
     private RealVector computeTFIDFVector(Article article, Map<String, Integer> termFrequency, Set<String> vocabulary) {
