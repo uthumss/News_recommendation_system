@@ -124,7 +124,7 @@ public class User {
 
 
     // Method to open an article link in browser
-    public static void openLinkInBrowser(String url) {
+    public void openLinkInBrowser(String url) {
         try {
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {

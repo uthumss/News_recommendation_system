@@ -16,9 +16,6 @@ import Templates.User;
 
 
 public class NewsRecoDriver {
-    private static final Set<String> VALID_CATEGORIES = Set.of(
-            "technology", "health", "sports", "business", "politics", "entertainment", "education", "lifestyle", "weather", "general");
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         NewsFetcher newsFetcher = new NewsFetcher();
@@ -33,7 +30,7 @@ public class NewsRecoDriver {
         while (true) {
             try {
                 clearConsole();
-                System.out.println("Enter Command ⬇\uFE0F");
+                System.out.println("Enter Command ⬇️");
                 System.out.println();
                 System.out.println("\uD83D\uDD39 1 for Create Account");
                 System.out.println("\uD83D\uDD39 2 for Login");
@@ -45,11 +42,11 @@ public class NewsRecoDriver {
                 clearConsole();
 
                 if (command == 1) {
-                    createAccount(system, dbManager, scanner);
+                    dbService.createAccount(system, dbManager, scanner);
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException e) {
-                        System.out.println("‼\uFE0F Timer interrupted: " + e.getMessage());
+                        System.out.println("‼️ Timer interrupted: " + e.getMessage());
                     }
                 } else if (command == 2) {
                     login(system, dbManager, scanner, newsFetcher, dbService, userManager);
@@ -69,28 +66,6 @@ public class NewsRecoDriver {
     }
 
 
-    private static void createAccount(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
-        while (true) {
-            System.out.print("\uD83D\uDD37 Enter username: ");
-            String username = scanner.nextLine();
-
-            // Check if the username already exists
-            if (dbManager.isUsernameTaken(username)) {
-                System.out.println("❗Username already exists. Please choose a different username.");
-                continue;
-            }
-
-            System.out.print("\uD83D\uDD37 Enter password: ");
-            String password = scanner.nextLine();
-
-            User user = new User(username, password);
-            user.setDatabaseManager(dbManager); // Set DatabaseManager for User
-            system.addUser(user);
-            dbManager.saveUser(username, password, "user");
-            System.out.println("✅ User account created");
-            break;
-        }
-    }
 
 
 
@@ -137,7 +112,7 @@ public class NewsRecoDriver {
         while (true) {
             System.out.println("Welcome " + admin.getUsername() + "!");
             System.out.println();
-            System.out.println("Admin Menu ⬇\uFE0F");
+            System.out.println("Admin Menu ⬇️");
             System.out.println("\uD83D\uDD39 1 - Delete User");
             System.out.println("\uD83D\uDD39 2 - Remove Article");
             System.out.println("\uD83D\uDD39 3 - Fetch More Articles");

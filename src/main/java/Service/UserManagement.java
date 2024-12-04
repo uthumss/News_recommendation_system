@@ -1,6 +1,7 @@
 package Service;
 
 import DatabaseManager.DatabaseManager;
+import Models.ArticleClassifier;
 import Templates.Article;
 import Templates.User;
 
@@ -9,13 +10,10 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class UserManagement {
+    private ArticleClassifier classifier = new ArticleClassifier();
 
-    private static final Set<String> VALID_CATEGORIES = Set.of(
-            "technology", "health", "sports", "business", "politics", "entertainment", "education", "lifestyle", "weather", "general");
-
-
-
-    public static void manageProfile(User user, DatabaseManager dbManager, Scanner scanner) {
+    // Method to call when user chooses to manage profile from the user menu
+    public void manageProfile(User user, DatabaseManager dbManager, Scanner scanner) {
         while (true) {
             System.out.println("Manage Profile:");
             System.out.println("1 - Add Preferred Category");
@@ -35,7 +33,7 @@ public class UserManagement {
                     continue;
                 }
 
-                System.out.println("Valid Categories: " + VALID_CATEGORIES);
+                System.out.println("Valid Categories: " + classifier.CATEGORY_KEYWORDS.keySet());
                 System.out.println("You can only add up to 3 categories.");
 
                 System.out.println("Enter categories to add (comma-separated if multiple):");
@@ -45,7 +43,7 @@ public class UserManagement {
 
                 for (String category : categoriesToAdd) {
                     category = category.trim();
-                    if (!VALID_CATEGORIES.contains(category)) {
+                    if (!classifier.CATEGORY_KEYWORDS.keySet().contains(category)) {
                         System.out.println("Invalid category: " + category);
                     } else if (user.getPreferences().contains(category)) {
                         System.out.println("Category already added: " + category);
@@ -110,7 +108,7 @@ public class UserManagement {
     }
 
     // Method to print blank lines to simulate clearing the console
-    private static void clearConsole() {
+    private void clearConsole() {
         for (int i = 0; i < 50; i++) { // Adjust the number as needed for your screen
             System.out.println();
         }

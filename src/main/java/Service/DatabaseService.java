@@ -47,7 +47,7 @@ public class DatabaseService {
     }
 
     // Method to load all articles in the database to the system
-    public static void loadArticlesFromDB(DatabaseManager dbManager, NewsRecommendationModel system) {
+    public void loadArticlesFromDB(DatabaseManager dbManager, NewsRecommendationModel system) {
         try {
             List<Article> articles = dbManager.loadArticles();
 
@@ -65,4 +65,29 @@ public class DatabaseService {
             System.err.println("Error loading articles: " + e.getMessage());
         }
     }
+
+    // Method to create a user account
+    public void createAccount(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
+        while (true) {
+            System.out.print("\uD83D\uDD37 Enter username: ");
+            String username = scanner.nextLine();
+
+            // Check if the username already exists
+            if (dbManager.isUsernameTaken(username)) {
+                System.out.println("❗Username already exists. Please choose a different username.");
+                continue;
+            }
+
+            System.out.print("\uD83D\uDD37 Enter password: ");
+            String password = scanner.nextLine();
+
+            User user = new User(username, password);
+            user.setDatabaseManager(dbManager); // Set DatabaseManager for User
+            system.addUser(user);
+            dbManager.saveUser(username, password, "user");
+            System.out.println("✅ User account created");
+            break;
+        }
+    }
+
 }
