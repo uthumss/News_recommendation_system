@@ -49,6 +49,7 @@ public class User {
     // Method to remove a preferred category
     public void removePreferredCategory(String category) {
         preferences.remove(category);
+        dbmanager.deleteUserPreference(username,category);
     }
 
     // Method to get preferred category from database
@@ -119,6 +120,7 @@ public class User {
             dbManager.saveReadArticle(this.username, articleId);
         }
     }
+
 
 
     // Method to open an article link in browser

@@ -9,6 +9,7 @@ import Models.ArticleClassifier;
 import Models.NewsFetcher;
 import Models.NewsRecommendationModel;
 import Service.DatabaseService;
+import Service.UserManagement;
 import Templates.Admin;
 import Templates.Article;
 import Templates.User;
@@ -21,10 +22,10 @@ public class NewsRecoDriver {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         NewsFetcher newsFetcher = new NewsFetcher();
-        ArticleClassifier classifier = new ArticleClassifier();
         DatabaseManager dbManager = new DatabaseManager();
         DatabaseService dbService = new DatabaseService();
         NewsRecommendationModel system = new NewsRecommendationModel(4);
+        UserManagement userManager = new UserManagement();
 
         // Load all articles from database
         dbService.loadArticlesFromDB(dbManager, system);
@@ -51,7 +52,7 @@ public class NewsRecoDriver {
                         System.out.println("‼\uFE0F Timer interrupted: " + e.getMessage());
                     }
                 } else if (command == 2) {
-                    login(system, dbManager, scanner, newsFetcher, classifier,dbService);
+                    login(system, dbManager, scanner, newsFetcher, dbService, userManager);
                 } else if (command == 3) {
                     System.out.println("\uD83D\uDED1 Exiting application...");
                     break;
@@ -93,7 +94,7 @@ public class NewsRecoDriver {
 
 
 
-    private static void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, ArticleClassifier classifier, DatabaseService dbService) {
+    private static void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, DatabaseService dbService, UserManagement userManager) {
         System.out.print("\uD83D\uDD37 Enter username: ");
         String username = scanner.nextLine();
         System.out.print("\uD83D\uDD37 Enter password: ");
@@ -126,7 +127,7 @@ public class NewsRecoDriver {
             system.addUser(user);
         }
 
-        userMenu(user, system, dbManager, scanner,dbService);
+        userMenu(user, system, dbManager, scanner,dbService, userManager);
     }
 
 
@@ -167,7 +168,7 @@ public class NewsRecoDriver {
 
 
 
-    private static void userMenu(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner,DatabaseService dbService) {
+    private static void userMenu(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner,DatabaseService dbService, UserManagement userManager) {
         while (true) {
             System.out.println("Welcome " + user.getUsername() + "!");
             System.out.println();
@@ -182,9 +183,9 @@ public class NewsRecoDriver {
             clearConsole();
 
             if (choice == 1) {
-                getRecommendations(user, system, dbManager, scanner,dbService);
+                system.getRecommendations(user, dbManager, scanner,dbService,userManager);
             } else if (choice == 2) {
-                manageProfile(user, dbManager, scanner);
+                userManager.manageProfile(user, dbManager, scanner);
             } else if (choice == 3) {
                 System.out.println("Logging out...");
                 break;
@@ -193,186 +194,6 @@ public class NewsRecoDriver {
             }
         }
     }
-
-
-
-    private static void getRecommendations(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, DatabaseService dbService) {
-        dbManager.getUserPreferences(user); // Load preferences from DB
-        List<String> skippedArticles = dbManager.getSkippedArticles(user.getUsername()); // Load skipped articles
-        user.setSkippedArticles(skippedArticles); // Update the user's skipped articles
-
-        if (user.getPreferences().isEmpty()) {
-            System.out.println("No preferences set. Please update your preferences first.");
-            manageProfile(user, dbManager, scanner);
-            return;
-        }
-
-        try {
-            List<Article> recommendations = system.recommendArticles(user).get();
-
-            // Filter out skipped and read articles
-            recommendations.removeIf(article ->
-                    skippedArticles.contains(article.getId()) ||
-                            user.getReadArticles().contains(article.getId())
-            );
-
-            if (recommendations.isEmpty()) {
-                System.out.println("No recommendations available based on your preferences.");
-                return;
-            }
-
-            int currentIndex = 0;
-            int skippedCount = 0; // Track skipped articles
-            while (currentIndex < recommendations.size()) {
-                System.out.println("Recommendations ⬇\uFE0F");
-
-                // Show 3 recommendations at a time
-                for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
-                    Article article = recommendations.get(currentIndex + i);
-                    System.out.println("\uD83D\uDD39 " + (i + 1) + " - " + article.getTitle());
-                }
-
-                System.out.println("\uD83D\uDD39 4 - See Other Recommendations");
-                System.out.println("\uD83D\uDD39 5 - Back to Menu");
-                System.out.print("➡\uFE0F Enter your choice: ");
-                int action = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                if (action >= 1 && action <= 3) {
-                    int selectedIndex = currentIndex + action - 1;
-                    if (selectedIndex < recommendations.size()) {
-                        Article selectedArticle = recommendations.get(selectedIndex);
-                        dbService.handleArticleInteraction(user, selectedArticle, dbManager, scanner);
-                    } else {
-                        System.out.println("❗ Invalid selection. Try again.");
-                    }
-                } else if (action == 4) {
-                    for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
-                        skippedCount++;
-                        Article skippedArticle = recommendations.get(currentIndex + i);
-                        dbManager.saveSkippedArticle(user.getUsername(), skippedArticle.getId());
-                    }
-                    currentIndex += 3; // Move to next set
-                } else if (action == 5) {
-                    System.out.println("Returning to menu...");
-                    break;
-                } else {
-                    System.out.println("❗\uFE0F Invalid choice. Try again.");
-                }
-
-                if (skippedCount >= 3) {
-                    System.out.println("You skipped 3 articles. They will not be recommended again.");
-                    skippedCount = 0; // Reset counter
-                }
-            }
-
-            if (currentIndex >= recommendations.size()) {
-                System.out.println("No more recommendations available.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error fetching recommendations: " + e.getMessage());
-        }
-    }
-
-
-
-
-
-    private static void manageProfile(User user, DatabaseManager dbManager, Scanner scanner) {
-        while (true) {
-            System.out.println("Manage Profile:");
-            System.out.println("1 - Add Preferred Category");
-            System.out.println("2 - Remove Preferred Category");
-            System.out.println("3 - View Liked Articles");
-            System.out.println("4 - Back to User Menu");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
-            clearConsole();
-
-            if (choice == 1) {
-                // Show the user valid categories and their current preferences
-                System.out.println("Your Current Preferences: " + user.getPreferences());
-
-                if (user.getPreferences().size() >= 3) {
-                    System.out.println("You already have the maximum number of preferred categories.");
-                    continue;
-                }
-
-                System.out.println("Valid Categories: " + VALID_CATEGORIES);
-                System.out.println("You can only add up to 3 categories.");
-
-                System.out.println("Enter categories to add (comma-separated if multiple):");
-                String input = scanner.nextLine().trim().toLowerCase();
-                clearConsole();
-                String[] categoriesToAdd = input.split(",");
-
-                for (String category : categoriesToAdd) {
-                    category = category.trim();
-                    if (!VALID_CATEGORIES.contains(category)) {
-                        System.out.println("Invalid category: " + category);
-                    } else if (user.getPreferences().contains(category)) {
-                        System.out.println("Category already added: " + category);
-                    } else if (user.getPreferences().size() >= 3) {
-                        System.out.println("Cannot add more categories. Limit reached.");
-                        break;
-                    } else {
-                        user.addPreferredCategory(category);
-                        System.out.println("Added category: " + category);
-                        user.syncToDatabase(dbManager); // Sync changes
-                    }
-                }
-
-
-            } else if (choice == 2) {
-                // Show the user's current preferences
-                System.out.println("Your Current Preferences: " + user.getPreferences());
-                if (user.getPreferences().isEmpty()) {
-                    System.out.println("You have no preferences to remove.");
-                    continue;
-                }
-
-                System.out.println("Enter category to remove:");
-                String category = scanner.nextLine().trim().toLowerCase();
-                if (!user.getPreferences().contains(category)) {
-                    System.out.println("Category not found in your preferences: " + category);
-                } else {
-                    user.removePreferredCategory(category);
-                    System.out.println("Removed category: " + category);
-                    user.syncToDatabase(dbManager); // Sync changes
-                }
-
-            }  else if (choice == 3) {
-                // Display liked articles
-                List<Article> likedArticles = dbManager.viewLikedArticles(user.getUsername());
-                if (likedArticles.isEmpty()) {
-                    System.out.println("You have no liked articles.");
-                } else {
-                    System.out.println("Liked Articles:");
-                    for (int i = 0; i < likedArticles.size(); i++) {
-                        System.out.println((i + 1) + " - " + likedArticles.get(i).getTitle());
-                    }
-                    System.out.println("Enter the number of the article to open its link, or 0 to go back:");
-                    int articleChoice = scanner.nextInt();
-                    scanner.nextLine(); // Consume newline
-
-                    if (articleChoice > 0 && articleChoice <= likedArticles.size()) {
-                        Article selectedArticle = likedArticles.get(articleChoice - 1);
-                        user.openLinkInBrowser(selectedArticle.getLink());
-                    } else if (articleChoice == 0) {
-                        System.out.println("Returning to Manage Profile...");
-                    } else {
-                        System.out.println("Invalid selection.");
-                    }
-                }
-
-            } else if (choice == 4) {
-                break;
-            } else {
-                System.out.println("Invalid option.");
-            }
-        }
-    }
-
 
     // Method to print blank lines to simulate clearing the console
     private static void clearConsole() {

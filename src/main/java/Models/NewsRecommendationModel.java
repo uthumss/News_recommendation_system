@@ -1,5 +1,7 @@
 package Models;
 
+import Service.DatabaseService;
+import Service.UserManagement;
 import Templates.Article;
 import Templates.User;
 import DatabaseManager.DatabaseManager;
@@ -197,4 +199,85 @@ public class NewsRecommendationModel {
     public List<Article> getArticles() {
         return articles;
     }
+
+    public void getRecommendations(User user, DatabaseManager dbManager, Scanner scanner, DatabaseService dbService, UserManagement userManager) {
+        dbManager.getUserPreferences(user); // Load preferences from DB
+        List<String> skippedArticles = dbManager.getSkippedArticles(user.getUsername()); // Load skipped articles
+        user.setSkippedArticles(skippedArticles); // Update the user's skipped articles
+
+        if (user.getPreferences().isEmpty()) {
+            System.out.println("No preferences set. Please update your preferences first.");
+            userManager.manageProfile(user, dbManager, scanner);
+            return;
+        }
+
+        try {
+            List<Article> recommendations = this.recommendArticles(user).get();
+
+            // Filter out skipped and read articles
+            recommendations.removeIf(article ->
+                    skippedArticles.contains(article.getId()) ||
+                            user.getReadArticles().contains(article.getId())
+            );
+
+            if (recommendations.isEmpty()) {
+                System.out.println("No recommendations available based on your preferences.");
+                return;
+            }
+
+            int currentIndex = 0;
+            int skippedCount = 0; // Track skipped articles
+            while (currentIndex < recommendations.size()) {
+                System.out.println("Recommendations ⬇\uFE0F");
+
+                // Show 3 recommendations at a time
+                for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
+                    Article article = recommendations.get(currentIndex + i);
+                    System.out.println("\uD83D\uDD39 " + (i + 1) + " - " + article.getTitle());
+                }
+
+                System.out.println("\uD83D\uDD39 4 - See Other Recommendations");
+                System.out.println("\uD83D\uDD39 5 - Back to Menu");
+                System.out.print("➡\uFE0F Enter your choice: ");
+                int action = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                if (action >= 1 && action <= 3) {
+                    int selectedIndex = currentIndex + action - 1;
+                    if (selectedIndex < recommendations.size()) {
+                        Article selectedArticle = recommendations.get(selectedIndex);
+                        dbService.handleArticleInteraction(user, selectedArticle, dbManager, scanner);
+                    } else {
+                        System.out.println("❗ Invalid selection. Try again.");
+                    }
+                } else if (action == 4) {
+                    for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
+                        skippedCount++;
+                        Article skippedArticle = recommendations.get(currentIndex + i);
+                        dbManager.saveSkippedArticle(user.getUsername(), skippedArticle.getId());
+                    }
+                    currentIndex += 3; // Move to next set
+                } else if (action == 5) {
+                    System.out.println("Returning to menu...");
+                    break;
+                } else {
+                    System.out.println("❗\uFE0F Invalid choice. Try again.");
+                }
+
+                if (skippedCount >= 3) {
+                    System.out.println("You skipped 3 articles. They will not be recommended again.");
+                    skippedCount = 0; // Reset counter
+                }
+            }
+
+            if (currentIndex >= recommendations.size()) {
+                System.out.println("No more recommendations available.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching recommendations: " + e.getMessage());
+        }
+    }
+
+
+
 }

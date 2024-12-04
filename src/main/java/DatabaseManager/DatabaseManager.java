@@ -171,6 +171,19 @@ public class DatabaseManager {
         return preferences;
     }
 
+    // Delete User Preference
+    public void deleteUserPreference(String username, String category) {
+        String sql = "DELETE FROM user_preferences WHERE username = ? AND category = ?";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, category);
+            pstmt.executeUpdate();
+            System.out.println("Preference for category '" + category + "' deleted ");
+        } catch (SQLException e) {
+            System.err.println("Error deleting preference: " + e.getMessage());
+        }
+    }
+
     // Save Liked article to the database
     public void saveLikedArticle(String username, String articleId) {
         String sql = "INSERT OR IGNORE INTO user_liked_articles(username, article_id) VALUES(?, ?)";
