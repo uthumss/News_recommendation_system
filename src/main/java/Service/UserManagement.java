@@ -170,6 +170,7 @@ public class UserManagement {
                 System.out.println("\uD83D\uDD37 Enter article ID to delete:");
                 String articleId = scanner.nextLine();
                 admin.deleteArticle(system.getArticles(), articleId);
+                dbManager.deleteArticleFromDB(articleId);
             } else if (choice == 3) {
                 newsFetcher.loadInitialArticles(dbManager, system, scanner);
             } else if (choice == 4) {
@@ -211,7 +212,7 @@ public class UserManagement {
 
     // Method to print blank lines to simulate clearing the console
     public void clearConsole() {
-        for (int i = 0; i < 50; i++) { // Adjust the number as needed for your screen
+        for (int i = 0; i < 100; i++) { // Adjust the number as needed for your screen
             System.out.println();
         }
     }

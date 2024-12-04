@@ -19,6 +19,7 @@ public class NewsRecommendationModel {
     private List<Article> articles;
     private ExecutorService executorService;
     private DatabaseManager dbManager = new DatabaseManager();
+    private UserManagement userManager = new UserManagement();
 
     public NewsRecommendationModel(int numThreads) {
         users = new ArrayList<>();
@@ -200,13 +201,13 @@ public class NewsRecommendationModel {
         return articles;
     }
 
-    public void getRecommendations(User user, DatabaseManager dbManager, Scanner scanner, DatabaseService dbService, UserManagement userManager) {
+    public void getRecommendations(User user, DatabaseManager dbManager, Scanner scanner, DatabaseService dbService, UserManagement userManager){
         dbManager.getUserPreferences(user); // Load preferences from DB
         List<String> skippedArticles = dbManager.getSkippedArticles(user.getUsername()); // Load skipped articles
         user.setSkippedArticles(skippedArticles); // Update the user's skipped articles
 
         if (user.getPreferences().isEmpty()) {
-            System.out.println("No preferences set. Please update your preferences first.");
+            System.out.println("❌ No preferences set. Please update your preferences first");
             userManager.manageProfile(user, dbManager, scanner);
             return;
         }
@@ -221,13 +222,15 @@ public class NewsRecommendationModel {
             );
 
             if (recommendations.isEmpty()) {
-                System.out.println("No recommendations available based on your preferences.");
+                System.out.println("❌ No recommendations available");
                 return;
             }
 
             int currentIndex = 0;
             int skippedCount = 0; // Track skipped articles
             while (currentIndex < recommendations.size()) {
+                userManager.clearConsole();
+
                 System.out.println("Recommendations ⬇\uFE0F");
 
                 // Show 3 recommendations at a time
@@ -238,9 +241,10 @@ public class NewsRecommendationModel {
 
                 System.out.println("\uD83D\uDD39 4 - See Other Recommendations");
                 System.out.println("\uD83D\uDD39 5 - Back to Menu");
-                System.out.print("➡\uFE0F Enter your choice: ");
+                System.out.print("➡️ Enter your choice: ");
                 int action = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
+                userManager.clearConsole();
 
                 if (action >= 1 && action <= 3) {
                     int selectedIndex = currentIndex + action - 1;
@@ -249,6 +253,7 @@ public class NewsRecommendationModel {
                         dbService.handleArticleInteraction(user, selectedArticle, dbManager, scanner);
                     } else {
                         System.out.println("❗ Invalid selection. Try again.");
+                        Thread.sleep(2000);
                     }
                 } else if (action == 4) {
                     for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
@@ -261,17 +266,20 @@ public class NewsRecommendationModel {
                     System.out.println("Returning to menu...");
                     break;
                 } else {
-                    System.out.println("❗\uFE0F Invalid choice. Try again.");
+                    System.out.println("❗️ Invalid choice. Try again.");
+                    Thread.sleep(2000);
                 }
 
                 if (skippedCount >= 3) {
-                    System.out.println("You skipped 3 articles. They will not be recommended again.");
+                    System.out.println("⏩ You skipped 3 articles. They will not be recommended again.");
                     skippedCount = 0; // Reset counter
+                    Thread.sleep(1000);
                 }
             }
 
             if (currentIndex >= recommendations.size()) {
                 System.out.println("No more recommendations available.");
+                Thread.sleep(3000);
             }
         } catch (Exception e) {
             System.err.println("Error fetching recommendations: " + e.getMessage());

@@ -111,6 +111,41 @@ public class DatabaseManager {
         }
     }
 
+    public void deleteArticleFromDB(String articleId){
+        try (Connection conn = connect()) {
+            // Validate if the article exists in the database
+            String checkSql = "SELECT COUNT(*) FROM articles WHERE article_id = ?";
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setString(1, articleId);
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next() && rs.getInt(1) == 0) {
+                    System.out.println("❗ Error: Article with ID " + articleId + " does not exist in the database.");
+                    return; // Exit method if article doesn't exist
+                }
+            }
+
+            // Tables to delete the article from
+            String[] tables = {
+                    "user_liked_articles",
+                    "user_skipped_articles",
+                    "articles"
+            };
+
+            // Delete the article from all related tables
+            for (String table : tables) {
+                String deleteSql = "DELETE FROM " + table + " WHERE article_id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(deleteSql)) {
+                    pstmt.setString(1, articleId);
+                    pstmt.executeUpdate();
+                }
+            }
+
+            System.out.println("✅ Article with ID " + articleId + " and associated data have been removed from the database.");
+        } catch (SQLException e) {
+            System.err.println("Error deleting article from the database: " + e.getMessage());
+        }
+    }
+
     // Load all articles from database
     public List<Article> loadArticles() {
         List<Article> articles = new ArrayList<>();

@@ -49,9 +49,19 @@ public class NewsRecoDriver {
                     break;
                 } else {
                     System.out.println("❗ Invalid command, try again.");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (Exception e2){
+                        System.out.println("‼️ Timer interrupted: " + e2.getMessage());
+                    }
                 }
             } catch (InputMismatchException e) {
                 System.out.println("❗ Invalid input. Please enter a number");
+                try {
+                    Thread.sleep(2000);
+                } catch (Exception e1){
+                    System.out.println("‼️ Timer interrupted: " + e1.getMessage());
+                }
                 scanner.nextLine(); // Clear the invalid input
             }
         }

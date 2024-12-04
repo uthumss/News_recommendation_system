@@ -11,17 +11,19 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class DatabaseService {
+    UserManagement userManager = new UserManagement();
 
-    public static void handleArticleInteraction(User user, Article article, DatabaseManager dbManager, Scanner scanner) {
+    public void handleArticleInteraction(User user, Article article, DatabaseManager dbManager, Scanner scanner) {
         // Open the link in the default browser
         System.out.println("Opening article in browser...");
         user.openLinkInBrowser(article.getLink());
 
         while (true) {
             try {
-                System.out.println("Options ⬇\uFE0F");
-                System.out.println("❤\uFE0F 1-Like");
-                System.out.println("↩\uFE0F 2-Return to Recommendations");
+                userManager.clearConsole();
+                System.out.println("Options ⬇️ - " + article.getTitle());
+                System.out.println("❤️ 1-Like");
+                System.out.println("↩️ 2-Return to Recommendations");
                 System.out.print("> ");
                 int action = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
@@ -35,12 +37,18 @@ public class DatabaseService {
                     dbManager.saveReadArticle(user.getUsername(), article.getId()); // Save to DB
                     user.addReadArticle(article.getId()); // Update in memory
                     System.out.println("Returning to recommendations...");
+                    Thread.sleep(1000);
                     break; // Exit to return to recommendations
                 } else {
                     System.out.println("Invalid choice. Please enter 1 or 2.");
                 }
             } catch (Exception e) {
                 System.out.println("Invalid input. Please enter a valid number.");
+                try {
+                    Thread.sleep(2000);
+                } catch (Exception e1){
+                    System.out.println("‼️ Timer interrupted: " + e1.getMessage());
+                }
                 scanner.nextLine(); // Clear the invalid input
             }
         }

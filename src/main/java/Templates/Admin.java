@@ -51,7 +51,6 @@ public class Admin extends User {
             articles.remove(articleToRemove);
         }
 
-        System.out.println("✅ Article with ID " + articleId + " has been removed.");
     }
 
 }
