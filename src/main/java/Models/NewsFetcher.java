@@ -4,13 +4,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import DatabaseManager.DatabaseManager;
 import Templates.Article;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 
 public class NewsFetcher {
     private static final String API_KEY = "4c6e1446eece454aa0c41c380842f9c3";
@@ -100,6 +100,44 @@ public class NewsFetcher {
         classifier.shutdown();
 
         return articles;
+    }
+
+    public void loadInitialArticles(DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {
+        try {
+            System.out.println("Available categories: " + String.join(", ", classifier.CATEGORY_KEYWORDS.keySet()));
+            System.out.print("Enter a category type to fetch articles: ");
+            String query = scanner.nextLine().trim().toLowerCase();
+
+            // Validate input
+            if (query.isEmpty()) {
+                System.out.println("Query cannot be empty. Please try again.");
+                return;
+            }
+
+            String[] categories = query.split(",");
+            for (String category : categories) {
+                category = category.trim();
+                if (!classifier.CATEGORY_KEYWORDS.keySet().contains(category)) {
+                    System.out.println("Invalid category: " + category + ". Please enter valid categories.");
+                    return;
+                }
+            }
+
+            // Proceed with fetching articles
+            List<Article> articles = this.fetchArticles(query);
+            for (Article article : articles) {
+                dbManager.saveArticle(article);
+                system.addArticle(article);
+            }
+            // Remove duplicate articles after saving
+            dbManager.removeDuplicateArticles();
+
+            // Sync articles with the in-memory system
+            system.syncArticlesFromDatabase(dbManager);
+
+        } catch (Exception e) {
+            System.err.println("Error loading initial articles: " + e.getMessage());
+        }
     }
 
 }

@@ -114,7 +114,7 @@ public class NewsRecoDriver {
             if (system.getUsers().stream().noneMatch(u -> u.getUsername().equals(username))) {
                 system.addUser(admin);
             }
-            adminMenu(admin, system, scanner, newsFetcher, classifier, dbManager);
+            adminMenu(admin, system, scanner, newsFetcher, dbManager);
             return;
         }
 
@@ -136,7 +136,7 @@ public class NewsRecoDriver {
 
 
 
-    private static void adminMenu(Admin admin, NewsRecommendationModel system, Scanner scanner, NewsFetcher newsFetcher, ArticleClassifier classifier, DatabaseManager dbManager) {
+    private static void adminMenu(Admin admin, NewsRecommendationModel system, Scanner scanner, NewsFetcher newsFetcher, DatabaseManager dbManager) {
         while (true) {
             System.out.println("Welcome " + admin.getUsername() + "!");
             System.out.println();
@@ -159,7 +159,7 @@ public class NewsRecoDriver {
                 String articleId = scanner.nextLine();
                 admin.deleteArticle(system.getArticles(), articleId);
             } else if (choice == 3) {
-                loadInitialArticles(newsFetcher, dbManager, system, scanner);
+                newsFetcher.loadInitialArticles(dbManager, system, scanner);
             } else if (choice == 4) {
                 System.out.println("Logging out...");
                 break;
@@ -378,43 +378,7 @@ public class NewsRecoDriver {
     }
 
 
-    private static void loadInitialArticles(NewsFetcher newsFetcher, DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {
-        try {
-            System.out.println("Available categories: " + String.join(", ", VALID_CATEGORIES));
-            System.out.print("Enter a category type to fetch articles: ");
-            String query = scanner.nextLine().trim().toLowerCase();
 
-            // Validate input
-            if (query.isEmpty()) {
-                System.out.println("Query cannot be empty. Please try again.");
-                return;
-            }
-
-            String[] categories = query.split(",");
-            for (String category : categories) {
-                category = category.trim();
-                if (!VALID_CATEGORIES.contains(category)) {
-                    System.out.println("Invalid category: " + category + ". Please enter valid categories.");
-                    return;
-                }
-            }
-
-            // Proceed with fetching articles
-            List<Article> articles = newsFetcher.fetchArticles(query);
-            for (Article article : articles) {
-                dbManager.saveArticle(article);
-                system.addArticle(article);
-            }
-            // Remove duplicate articles after saving
-            dbManager.removeDuplicateArticles();
-
-            // Sync articles with the in-memory system
-            system.syncArticlesFromDatabase(dbManager);
-
-        } catch (Exception e) {
-            System.err.println("Error loading initial articles: " + e.getMessage());
-        }
-    }
 
     private static void loadArticlesFromDB(DatabaseManager dbManager, NewsRecommendationModel system) {
         try {
