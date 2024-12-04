@@ -8,6 +8,7 @@ import DatabaseManager.DatabaseManager;
 import Models.ArticleClassifier;
 import Models.NewsFetcher;
 import Models.NewsRecommendationModel;
+import Service.DatabaseService;
 import Templates.Admin;
 import Templates.Article;
 import Templates.User;
@@ -22,6 +23,7 @@ public class NewsRecoDriver {
         NewsFetcher newsFetcher = new NewsFetcher();
         ArticleClassifier classifier = new ArticleClassifier();
         DatabaseManager dbManager = new DatabaseManager();
+        DatabaseService dbService = new DatabaseService();
         NewsRecommendationModel system = new NewsRecommendationModel(4);
 
 
@@ -53,7 +55,7 @@ public class NewsRecoDriver {
                         System.out.println("‼\uFE0F Timer interrupted: " + e.getMessage());
                     }
                 } else if (command == 2) {
-                    login(system, dbManager, scanner, newsFetcher, classifier);
+                    login(system, dbManager, scanner, newsFetcher, classifier,dbService);
                 } else if (command == 3) {
                     System.out.println("\uD83D\uDED1 Exiting application...");
                     break;
@@ -95,7 +97,7 @@ public class NewsRecoDriver {
 
 
 
-    private static void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, ArticleClassifier classifier) {
+    private static void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, ArticleClassifier classifier, DatabaseService dbService) {
         System.out.print("\uD83D\uDD37 Enter username: ");
         String username = scanner.nextLine();
         System.out.print("\uD83D\uDD37 Enter password: ");
@@ -128,7 +130,7 @@ public class NewsRecoDriver {
             system.addUser(user);
         }
 
-        userMenu(user, system, dbManager, scanner);
+        userMenu(user, system, dbManager, scanner,dbService);
     }
 
 
@@ -157,7 +159,7 @@ public class NewsRecoDriver {
                 String articleId = scanner.nextLine();
                 admin.deleteArticle(system.getArticles(), articleId);
             } else if (choice == 3) {
-                loadInitialArticles(newsFetcher, classifier, dbManager, system, scanner);
+                loadInitialArticles(newsFetcher, dbManager, system, scanner);
             } else if (choice == 4) {
                 System.out.println("Logging out...");
                 break;
@@ -169,7 +171,7 @@ public class NewsRecoDriver {
 
 
 
-    private static void userMenu(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
+    private static void userMenu(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner,DatabaseService dbService) {
         while (true) {
             System.out.println("Welcome " + user.getUsername() + "!");
             System.out.println();
@@ -184,7 +186,7 @@ public class NewsRecoDriver {
             clearConsole();
 
             if (choice == 1) {
-                getRecommendations(user, system, dbManager, scanner);
+                getRecommendations(user, system, dbManager, scanner,dbService);
             } else if (choice == 2) {
                 manageProfile(user, dbManager, scanner);
             } else if (choice == 3) {
@@ -198,7 +200,7 @@ public class NewsRecoDriver {
 
 
 
-    private static void getRecommendations(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
+    private static void getRecommendations(User user, NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, DatabaseService dbService) {
         dbManager.getUserPreferences(user); // Load preferences from DB
         List<String> skippedArticles = dbManager.getSkippedArticles(user.getUsername()); // Load skipped articles
         user.setSkippedArticles(skippedArticles); // Update the user's skipped articles
@@ -244,7 +246,7 @@ public class NewsRecoDriver {
                     int selectedIndex = currentIndex + action - 1;
                     if (selectedIndex < recommendations.size()) {
                         Article selectedArticle = recommendations.get(selectedIndex);
-                        handleArticleInteraction(user, selectedArticle, dbManager, scanner);
+                        dbService.handleArticleInteraction(user, selectedArticle, dbManager, scanner);
                     } else {
                         System.out.println("❗ Invalid selection. Try again.");
                     }
@@ -359,7 +361,7 @@ public class NewsRecoDriver {
 
                     if (articleChoice > 0 && articleChoice <= likedArticles.size()) {
                         Article selectedArticle = likedArticles.get(articleChoice - 1);
-                        openLinkInBrowser(selectedArticle.getLink());
+                        user.openLinkInBrowser(selectedArticle.getLink());
                     } else if (articleChoice == 0) {
                         System.out.println("Returning to Manage Profile...");
                     } else {
@@ -376,57 +378,7 @@ public class NewsRecoDriver {
     }
 
 
-    private static void handleArticleInteraction(User user, Article article, DatabaseManager dbManager, Scanner scanner) {
-        // Open the link in the default browser
-        System.out.println("Opening article in browser...");
-        openLinkInBrowser(article.getLink());
-
-        while (true) {
-            try {
-                System.out.println("Options ⬇\uFE0F");
-                System.out.println("❤\uFE0F 1-Like");
-                System.out.println("↩\uFE0F 2-Return to Recommendations");
-                System.out.print("> ");
-                int action = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                if (action == 1) {
-                    user.addLikedArticle(article.getId());
-                    user.syncToDatabase(dbManager); // Sync changes
-                    System.out.println("You liked this article.");
-                    break; // Exit after liking the article
-                } else if (action == 2) {
-                    dbManager.saveReadArticle(user.getUsername(), article.getId()); // Save to DB
-                    user.addReadArticle(article.getId()); // Update in memory
-                    System.out.println("Returning to recommendations...");
-                    break; // Exit to return to recommendations
-                } else {
-                    System.out.println("Invalid choice. Please enter 1 or 2.");
-                }
-            } catch (Exception e) {
-                System.out.println("Invalid input. Please enter a valid number.");
-                scanner.nextLine(); // Clear the invalid input
-            }
-        }
-    }
-
-
-    private static void openLinkInBrowser(String url) {
-        try {
-            Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                URI uri = new URI(url);
-                desktop.browse(uri); // Opens the link in the default browser
-            } else {
-                System.out.println("Opening browser is not supported on this system.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error opening link: " + e.getMessage());
-        }
-    }
-
-
-    private static void loadInitialArticles(NewsFetcher newsFetcher, ArticleClassifier classifier, DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {
+    private static void loadInitialArticles(NewsFetcher newsFetcher, DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {
         try {
             System.out.println("Available categories: " + String.join(", ", VALID_CATEGORIES));
             System.out.print("Enter a category type to fetch articles: ");

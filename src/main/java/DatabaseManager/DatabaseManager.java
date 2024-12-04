@@ -4,6 +4,8 @@ import Templates.Admin;
 import Templates.Article;
 import Templates.User;
 
+import java.awt.*;
+import java.net.URI;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

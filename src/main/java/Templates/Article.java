@@ -1,5 +1,8 @@
 package Templates;
 
+import java.awt.*;
+import java.net.URI;
+
 public class Article {
     private String id;
     private String title;

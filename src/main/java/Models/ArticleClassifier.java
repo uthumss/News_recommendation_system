@@ -11,7 +11,7 @@ public class ArticleClassifier {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     // Define keywords for each category
-    private static final Map<String, String[]> CATEGORY_KEYWORDS = new HashMap<>();
+    public static final Map<String, String[]> CATEGORY_KEYWORDS = new HashMap<>();
 
     static {
         CATEGORY_KEYWORDS.put("business", new String[]{"investment", "capital", "startups", "business", "market", "company"});
