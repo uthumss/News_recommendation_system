@@ -1,10 +1,14 @@
 package Service;
 
 import DatabaseManager.DatabaseManager;
+import Models.NewsRecommendationModel;
 import Templates.Article;
 import Templates.User;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class DatabaseService {
 
@@ -39,6 +43,26 @@ public class DatabaseService {
                 System.out.println("Invalid input. Please enter a valid number.");
                 scanner.nextLine(); // Clear the invalid input
             }
+        }
+    }
+
+    // Method to load all articles in the database to the system
+    public static void loadArticlesFromDB(DatabaseManager dbManager, NewsRecommendationModel system) {
+        try {
+            List<Article> articles = dbManager.loadArticles();
+
+            // Ensure no duplicate articles are added to the system
+            Set<String> seenTitles = new HashSet<>();
+            for (Article article : articles) {
+                if (!seenTitles.contains(article.getTitle())) {
+                    system.addArticle(article);
+                    seenTitles.add(article.getTitle());
+                }
+            }
+
+            System.out.println("Articles loaded successfully into the system.");
+        } catch (Exception e) {
+            System.err.println("Error loading articles: " + e.getMessage());
         }
     }
 }

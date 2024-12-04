@@ -26,12 +26,8 @@ public class NewsRecoDriver {
         DatabaseService dbService = new DatabaseService();
         NewsRecommendationModel system = new NewsRecommendationModel(4);
 
-
-        // Ensure database tables exist
-//        dbManager.createUsersTableIfNotExists(); // For Users
-//        dbManager.createTableIfNotExists(); // For articles
-
-        loadArticlesFromDB(dbManager, system); // Load articles from database
+        // Load all articles from database
+        dbService.loadArticlesFromDB(dbManager, system);
 
         while (true) {
             try {
@@ -374,28 +370,6 @@ public class NewsRecoDriver {
             } else {
                 System.out.println("Invalid option.");
             }
-        }
-    }
-
-
-
-
-    private static void loadArticlesFromDB(DatabaseManager dbManager, NewsRecommendationModel system) {
-        try {
-            List<Article> articles = dbManager.loadArticles();
-
-            // Ensure no duplicate articles are added to the system
-            Set<String> seenTitles = new HashSet<>();
-            for (Article article : articles) {
-                if (!seenTitles.contains(article.getTitle())) {
-                    system.addArticle(article);
-                    seenTitles.add(article.getTitle());
-                }
-            }
-
-            System.out.println("Articles loaded successfully into the system.");
-        } catch (Exception e) {
-            System.err.println("Error loading articles: " + e.getMessage());
         }
     }
 

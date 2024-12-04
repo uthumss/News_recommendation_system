@@ -102,6 +102,7 @@ public class NewsFetcher {
         return articles;
     }
 
+    // method to load newly fetched articles to the DB and program
     public void loadInitialArticles(DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {
         try {
             System.out.println("Available categories: " + String.join(", ", classifier.CATEGORY_KEYWORDS.keySet()));
