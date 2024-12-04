@@ -11,9 +11,8 @@ public class ArticleClassifier {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     // Define keywords for each category
-    public static final Map<String, String[]> CATEGORY_KEYWORDS = new HashMap<>();
-
-    static {
+    public final Map<String, String[]> CATEGORY_KEYWORDS = new HashMap<>();
+     {
         CATEGORY_KEYWORDS.put("business", new String[]{"investment", "capital", "startups", "business", "market", "company"});
         CATEGORY_KEYWORDS.put("sports", new String[]{"game", "team", "match", "player", "score", "sports"});
         CATEGORY_KEYWORDS.put("health", new String[]{"health", "coronavirus", "fitness", "disease", "ECG", "vaccine"});
@@ -51,27 +50,6 @@ public class ArticleClassifier {
     }
 
 
-
-    private static Map<String, Integer> getStringIntegerMap(String description) {
-        Map<String, Integer> categoryScores = new HashMap<>();
-        String lowerCaseDescription = description.toLowerCase();
-
-        // Calculate scores for each category by comparing with each word in the article description
-        for (Map.Entry<String, String[]> entry : CATEGORY_KEYWORDS.entrySet()) {
-            String category = entry.getKey();
-            String[] keywords = entry.getValue();
-            int score = 0;
-
-            for (String keyword : keywords) {
-                if (lowerCaseDescription.contains(keyword)) {
-                    score++;
-                }
-            }
-
-            categoryScores.put(category, score);
-        }
-        return categoryScores;
-    }
 
     // Concurrently calculate scores for all categories
     private Map<String, Integer> getConcurrentCategoryScores(String description) {
