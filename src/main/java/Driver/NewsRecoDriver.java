@@ -43,7 +43,7 @@ public class NewsRecoDriver {
                         System.out.println("‼️ Timer interrupted: " + e.getMessage());
                     }
                 } else if (command == 2) {
-                    userManager.login(system, dbManager, scanner, newsFetcher, dbService, userManager);
+                    userManager.login(system, dbManager, scanner, newsFetcher, dbService);
                 } else if (command == 3) {
                     System.out.println("\uD83D\uDED1 Exiting application...");
                     break;

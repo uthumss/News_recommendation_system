@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 public class UserManagement {
     private ArticleClassifier classifier = new ArticleClassifier();
+    private Scanner scanner = new Scanner(System.in);
 
     // Method to call when user chooses to manage profile from the user menu
     public void manageProfile(User user, DatabaseManager dbManager, Scanner scanner) {
@@ -110,7 +111,7 @@ public class UserManagement {
     }
 
     // Method for a user or admin to login to the relevant menu
-    public void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, DatabaseService dbService, UserManagement userManager) {
+    public void login(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner, NewsFetcher newsFetcher, DatabaseService dbService) {
         System.out.print("\uD83D\uDD37 Enter username: ");
         String username = scanner.nextLine();
         System.out.print("\uD83D\uDD37 Enter password: ");
@@ -177,13 +178,6 @@ public class UserManagement {
                     String username = scanner.nextLine();
                     admin.removeUser(users, username);
 
-//                    // Check if the username exists before attempting deletion
-//                    boolean userFound = users.stream().anyMatch(u -> u.getUsername().equals(username));
-//                    if (userFound) {
-//                        admin.removeUser(users, username);
-//                    } else {
-//                        System.out.println("❌ User with username '" + username + "' not found.");
-//                    }
                 }
             } else if (choice == 2) {
                 System.out.println("\uD83D\uDD37 Enter article ID to delete:");

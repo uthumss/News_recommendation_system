@@ -14,7 +14,6 @@ import java.util.*;
 
 public class NewsFetcher {
     private static final String API_KEY = "4c6e1446eece454aa0c41c380842f9c3";
-    private final Set<String> fetchedUrls = new HashSet<>(); // To track fetched article URLs
     private ArticleClassifier classifier = new ArticleClassifier();
 
     public List<Article> fetchArticles(String query) throws Exception {
@@ -91,7 +90,6 @@ public class NewsFetcher {
 
                 // Create the article using the updated constructor
                 Article article = new Article(articleId, headline, description, link);
-//                article.setCategory("General"); // You can adjust category as needed
                 String category = classifier.classifyArticle(description);
                 article.setCategory(category);
                 articles.add(article);

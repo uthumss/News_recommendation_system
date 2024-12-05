@@ -44,31 +44,6 @@ public class DatabaseManager {
         return false; // Return false if an error occurs
     }
 
-
-    // Load all users from the database
-    public List<User> loadUsers() {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT username, password FROM users WHERE role = 'user'";
-
-        try (Connection conn = connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                String username = rs.getString("username");
-                String password = rs.getString("password");
-
-                User user = new User(username, password);
-                user.setDatabaseManager(this);  // Set the DatabaseManager for User
-                users.add(user);  // Add the user to the users list
-
-            }
-        } catch (SQLException e) {
-            System.err.println("Error loading users: " + e.getMessage());
-        }
-        return users;
-    }
-
-
     // Select all users
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
@@ -93,7 +68,6 @@ public class DatabaseManager {
         }
         return users;
     }
-
 
     // Authenticate user
     public User authenticateUser(String username, String password) {
