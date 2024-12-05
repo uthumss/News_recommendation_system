@@ -111,6 +111,7 @@ public class DatabaseManager {
         }
     }
 
+    // To delete an article from the whole database
     public void deleteArticleFromDB(String articleId){
         try (Connection conn = connect()) {
             // Validate if the article exists in the database
@@ -273,6 +274,26 @@ public class DatabaseManager {
             System.err.println("Error fetching liked articles: " + e.getMessage());
         }
         return likedArticles;
+    }
+
+    public void removeLikedArticle(String username, String articleId) {
+        String sql = "DELETE FROM user_liked_articles WHERE username = ? AND article_id = ?";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // Set the username and articleId
+            pstmt.setString(1, username);
+            pstmt.setString(2, articleId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("You Disliked this article.");
+            } else {
+                System.out.println("❗ No liked article found with ID " + articleId + " for user " + username + ".");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error unliking article: " + e.getMessage());
+        }
     }
 
 

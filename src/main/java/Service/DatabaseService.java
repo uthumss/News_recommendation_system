@@ -32,10 +32,35 @@ public class DatabaseService {
                     user.addLikedArticle(article.getId());
                     user.syncToDatabase(dbManager); // Sync changes
                     System.out.println("You liked this article.");
-                    break; // Exit after liking the article
+                    Thread.sleep(2000);
+                    userManager.clearConsole();
+
+                    System.out.println("Options ⬇️ - " + article.getTitle());
+                    System.out.println("\uD83D\uDC94 1-Dislike");
+                    System.out.println("↩️ 2-Return to Recommendations");
+                    System.out.print("> ");
+                    int action1 = scanner.nextInt();
+                    scanner.nextLine();
+
+                    while(true) {
+                        try {
+                            if (action1 == 1) {
+                                user.removeLikedArticle(user.getUsername(), article.getId());
+                                System.out.println("You Disliked this article.");
+                                Thread.sleep(2000);
+                                break;
+                            } else if (action1 == 2) {
+                                System.out.println("Returning to recommendations...");
+                                Thread.sleep(1000);
+                                break; // Exit to return to recommendations
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Invalid input. Please enter a valid number.");
+                        }
+                    }
+                    break; // Exit after
                 } else if (action == 2) {
-                    dbManager.saveReadArticle(user.getUsername(), article.getId()); // Save to DB
-                    user.addReadArticle(article.getId()); // Update in memory
+                    user.addReadArticle(user.getUsername(),article.getId()); // Update in memory
                     System.out.println("Returning to recommendations...");
                     Thread.sleep(1000);
                     break; // Exit to return to recommendations

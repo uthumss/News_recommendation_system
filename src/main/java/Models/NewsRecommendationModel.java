@@ -19,7 +19,6 @@ public class NewsRecommendationModel {
     private List<Article> articles;
     private ExecutorService executorService;
     private DatabaseManager dbManager = new DatabaseManager();
-    private UserManagement userManager = new UserManagement();
 
     public NewsRecommendationModel(int numThreads) {
         users = new ArrayList<>();
@@ -85,7 +84,7 @@ public class NewsRecommendationModel {
                     continue;  // Skip articles already skipped
                 }
 
-                // Check if article belongs to the preferred category AND is liked
+                // Check if article belongs to the preferred category AND has similarity with liked articles
                 if (user.getPreferences().contains(article.getCategory()) && likedArticles.contains(article)) {
                     RealVector articleVector = articleVectors.get(article);
                     double score = calculateAverageSimilarity(likedArticleVectors, articleVector);

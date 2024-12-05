@@ -29,14 +29,6 @@ public class User {
         return username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public void setPreferences(List<String> preferences) {
         this.preferences = preferences;
     }
@@ -61,8 +53,9 @@ public class User {
     }
 
     // Method to add an article to the read list
-    public void addReadArticle(String article) {
+    public void addReadArticle(String username,String article) {
         readArticles.add(article);
+        dbmanager.saveReadArticle(username, article);
     }
 
     // Method to add an article to the liked list
@@ -71,8 +64,9 @@ public class User {
     }
 
     // Method to remove an article from the liked list
-    public void removeLikedArticle(String article) {
+    public void removeLikedArticle(String username,String article) {
         likedArticles.remove(article);
+        dbmanager.removeLikedArticle(username,article);
     }
 
     public void setSkippedArticles(List<String> skippedArticles) {
@@ -82,13 +76,6 @@ public class User {
     // Method to get skipped articles from the database
     public List<String> getSkippedArticles() {
         return dbmanager.getSkippedArticles(username);
-    }
-
-
-    // Method to add an article to the skipped list
-    public void addSkippedArticle(String articleId) {
-        skippedArticles.add(articleId);
-        dbmanager.saveSkippedArticle(username, articleId); // Sync with the database
     }
 
     // Method to get read articles from database
