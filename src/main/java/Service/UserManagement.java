@@ -169,8 +169,22 @@ public class UserManagement {
             } else if (choice == 2) {
                 System.out.println("\uD83D\uDD37 Enter article ID to delete:");
                 String articleId = scanner.nextLine();
-                admin.deleteArticle(system.getArticles(), articleId);
-                dbManager.deleteArticleFromDB(articleId);
+
+                // Search for article by ID
+                Article article = findArticleById(system.getArticles(), articleId);
+                if (article != null) {
+                    System.out.println("Found article: " + article.getTitle());
+                    System.out.print("Are you sure you want to delete this article? (yes/no): ");
+                    String confirmation = scanner.nextLine().trim().toLowerCase();
+
+                    if (confirmation.equals("yes")) {
+                        admin.deleteArticle(system.getArticles(), articleId);
+                    } else {
+                        System.out.println("Deletion cancelled.");
+                    }
+                } else {
+                    System.out.println("❌ Article not found with ID: " + articleId);
+                }
             } else if (choice == 3) {
                 newsFetcher.loadInitialArticles(dbManager, system, scanner);
             } else if (choice == 4) {
@@ -180,6 +194,16 @@ public class UserManagement {
                 System.out.println("❗Invalid option.");
             }
         }
+    }
+
+    // Helper method to find an article by ID
+    private Article findArticleById(List<Article> articles, String articleId) {
+        for (Article article : articles) {
+            if (article.getId().equals(articleId)) {
+                return article; // Return the matching article
+            }
+        }
+        return null; // Return null if no article matches the given ID
     }
 
     // User menu method

@@ -50,6 +50,7 @@ public class Admin extends User {
         for (Article articleToRemove : articlesToRemove){
             articles.remove(articleToRemove);
         }
+        dbmanager.deleteArticleFromDB(articleId);
 
     }
 
