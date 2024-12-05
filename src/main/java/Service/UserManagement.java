@@ -163,9 +163,28 @@ public class UserManagement {
             scanner.nextLine(); // Consume newline
 
             if (choice == 1) {
-                System.out.println("\uD83D\uDD37 Enter username to delete:");
-                String username = scanner.nextLine();
-                admin.removeUser(system.getUsers(), username);
+                System.out.println("🧑 All Registered Users:");
+                List<User> users = dbManager.getAllUsers();
+                if (users.isEmpty()) {
+                    System.out.println("No users found.");
+                } else {
+                    for (User user : users) {
+                        System.out.println(" - " + user.getUsername());
+                    }
+
+                    // Prompt admin to enter a username for deletion
+                    System.out.println("\uD83D\uDD37 Enter username to delete:");
+                    String username = scanner.nextLine();
+                    admin.removeUser(users, username);
+
+//                    // Check if the username exists before attempting deletion
+//                    boolean userFound = users.stream().anyMatch(u -> u.getUsername().equals(username));
+//                    if (userFound) {
+//                        admin.removeUser(users, username);
+//                    } else {
+//                        System.out.println("❌ User with username '" + username + "' not found.");
+//                    }
+                }
             } else if (choice == 2) {
                 System.out.println("\uD83D\uDD37 Enter article ID to delete:");
                 String articleId = scanner.nextLine();

@@ -27,7 +27,6 @@ public class Admin extends User {
         // Remove User from database
         if (dbmanager != null){
             dbmanager.deleteUserFromDatabase(username);
-            System.out.println("✅ " + username + " has been removed from the system.");
         }
         else{
             System.out.println("‼\uFE0F Database not initialized.");

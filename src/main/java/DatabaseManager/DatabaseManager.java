@@ -68,6 +68,33 @@ public class DatabaseManager {
         return users;
     }
 
+
+    // Select all users
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT username, password FROM users WHERE role = 'user'"; // Select only regular users
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            // Iterate through the result set and create User objects
+            while (rs.next()) {
+                String username = rs.getString("username");
+                String password = rs.getString("password");
+
+                // Create a regular User object
+                User user = new User(username, password);
+                user.setDatabaseManager(this); // Set the database manager for the user
+                users.add(user); // Add the user to the list
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching users: " + e.getMessage());
+        }
+        return users;
+    }
+
+
     // Authenticate user
     public User authenticateUser(String username, String password) {
         String sql = "SELECT role FROM users WHERE username = ? AND password = ?";
@@ -372,8 +399,12 @@ public class DatabaseManager {
         }
     }
 
-    // To delete a user from the database
+    // Method to delete a user from database
     public void deleteUserFromDatabase(String username) {
+        // Query to check the user's role
+        String checkRoleQuery = "SELECT role FROM users WHERE username = ?";
+
+        // Tables to delete associated data
         String[] tables = {
                 "user_skipped_articles",
                 "user_read_articles",
@@ -382,7 +413,27 @@ public class DatabaseManager {
                 "users"
         };
 
-        try (Connection conn = connect()) {
+        try (Connection conn = connect();
+             PreparedStatement checkRoleStmt = conn.prepareStatement(checkRoleQuery)) {
+
+            // Check the role of the user
+            checkRoleStmt.setString(1, username);
+            try (ResultSet rs = checkRoleStmt.executeQuery()) {
+                if (rs.next()) {
+                    String role = rs.getString("role");
+
+                    // Prevent deletion if the user is an admin
+                    if ("admin".equalsIgnoreCase(role)) {
+                        System.out.println("❌ Cannot delete an admin account.");
+                        return;
+                    }
+                } else {
+                    System.out.println("❗ User not found in the database.");
+                    return;
+                }
+            }
+
+            // Delete the user's data from associated tables
             for (String table : tables) {
                 String sql = "DELETE FROM " + table + " WHERE username = ?";
                 try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -390,7 +441,8 @@ public class DatabaseManager {
                     pstmt.executeUpdate();
                 }
             }
-            System.out.println("User " + username + " and all associated data have been removed from the database.");
+
+            System.out.println("✅ User " + username + " and all associated data have been removed from the database.");
         } catch (SQLException e) {
             System.err.println("Error removing user from the database: " + e.getMessage());
         }
