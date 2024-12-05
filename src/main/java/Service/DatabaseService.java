@@ -11,9 +11,10 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class DatabaseService {
-    UserManagement userManager = new UserManagement();
+    private UserManagement userManager = new UserManagement();
+    private Scanner scanner = new Scanner(System.in);
 
-    public void handleArticleInteraction(User user, Article article, DatabaseManager dbManager, Scanner scanner) {
+    public void handleArticleInteraction(User user, Article article, DatabaseManager dbManager) {
         // Open the link in the default browser
         System.out.println("Opening article in browser...");
         user.openLinkInBrowser(article.getLink());
@@ -96,30 +97,6 @@ public class DatabaseService {
             System.out.println("Articles loaded successfully into the system.");
         } catch (Exception e) {
             System.err.println("Error loading articles: " + e.getMessage());
-        }
-    }
-
-    // Method to create a user account
-    public void createAccount(NewsRecommendationModel system, DatabaseManager dbManager, Scanner scanner) {
-        while (true) {
-            System.out.print("\uD83D\uDD37 Enter username: ");
-            String username = scanner.nextLine();
-
-            // Check if the username already exists
-            if (dbManager.isUsernameTaken(username)) {
-                System.out.println("❗Username already exists. Please choose a different username.");
-                continue;
-            }
-
-            System.out.print("\uD83D\uDD37 Enter password: ");
-            String password = scanner.nextLine();
-
-            User user = new User(username, password);
-            user.setDatabaseManager(dbManager); // Set DatabaseManager for User
-            system.addUser(user);
-            dbManager.saveUser(username, password, "user");
-            System.out.println("✅ User account created");
-            break;
         }
     }
 

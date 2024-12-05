@@ -207,7 +207,7 @@ public class NewsRecommendationModel {
 
         if (user.getPreferences().isEmpty()) {
             System.out.println("❌ No preferences set. Please update your preferences first");
-            userManager.manageProfile(user, dbManager, scanner);
+            userManager.manageProfile(user, dbManager);
             return;
         }
 
@@ -222,6 +222,7 @@ public class NewsRecommendationModel {
 
             if (recommendations.isEmpty()) {
                 System.out.println("❌ No recommendations available");
+                Thread.sleep(2000);
                 return;
             }
 
@@ -241,44 +242,53 @@ public class NewsRecommendationModel {
                 System.out.println("\uD83D\uDD39 4 - See Other Recommendations");
                 System.out.println("\uD83D\uDD39 5 - Back to Menu");
                 System.out.print("➡️ Enter your choice: ");
-                int action = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-                userManager.clearConsole();
 
-                if (action >= 1 && action <= 3) {
-                    int selectedIndex = currentIndex + action - 1;
-                    if (selectedIndex < recommendations.size()) {
-                        Article selectedArticle = recommendations.get(selectedIndex);
-                        dbService.handleArticleInteraction(user, selectedArticle, dbManager, scanner);
+                if (scanner.hasNextInt()) {
+                    int action = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline
+
+                    if (action >= 1 && action <= 3) {
+                        int selectedIndex = currentIndex + action - 1;
+                        if (selectedIndex < recommendations.size()) {
+                            Article selectedArticle = recommendations.get(selectedIndex);
+                            dbService.handleArticleInteraction(user, selectedArticle, dbManager);
+                        } else {
+                            System.out.println("❗ Invalid selection. Try again.");
+                            Thread.sleep(2000);
+                        }
+                    } else if (action == 4) {
+                        for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
+                            skippedCount++;
+                            Article skippedArticle = recommendations.get(currentIndex + i);
+                            dbManager.saveSkippedArticle(user.getUsername(), skippedArticle.getId());
+                        }
+                        currentIndex += 3; // Move to next set
+                    } else if (action == 5) {
+                        System.out.println("Returning to menu...");
+                        userManager.timer(1000);
+                        break;
                     } else {
-                        System.out.println("❗ Invalid selection. Try again.");
-                        Thread.sleep(2000);
+                        System.out.println("❗️ Invalid choice. Try again.");
+                        userManager.timer(2000);
                     }
-                } else if (action == 4) {
-                    for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
-                        skippedCount++;
-                        Article skippedArticle = recommendations.get(currentIndex + i);
-                        dbManager.saveSkippedArticle(user.getUsername(), skippedArticle.getId());
+
+                    if (skippedCount >= 3) {
+                        System.out.println("⏩ You skipped 3 articles. They will not be recommended again.");
+                        skippedCount = 0; // Reset counter
+                        userManager.timer(1000);
                     }
-                    currentIndex += 3; // Move to next set
-                } else if (action == 5) {
-                    System.out.println("Returning to menu...");
-                    break;
                 } else {
-                    System.out.println("❗️ Invalid choice. Try again.");
-                    Thread.sleep(2000);
+                    System.out.println("❗ Invalid input. Please enter a number.");
+                    scanner.nextLine(); // Clear the invalid input
+                    userManager.timer(2000);
                 }
 
-                if (skippedCount >= 3) {
-                    System.out.println("⏩ You skipped 3 articles. They will not be recommended again.");
-                    skippedCount = 0; // Reset counter
-                    Thread.sleep(1000);
-                }
+
             }
 
             if (currentIndex >= recommendations.size()) {
                 System.out.println("No more recommendations available.");
-                Thread.sleep(3000);
+                userManager.timer(2000);
             }
         } catch (Exception e) {
             System.err.println("Error fetching recommendations: " + e.getMessage());

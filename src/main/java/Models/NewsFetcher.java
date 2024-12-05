@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import DatabaseManager.DatabaseManager;
+import Service.UserManagement;
 import Templates.Article;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +15,8 @@ import java.util.*;
 
 public class NewsFetcher {
     private static final String API_KEY = "4c6e1446eece454aa0c41c380842f9c3";
-    private ArticleClassifier classifier = new ArticleClassifier();
+    public ArticleClassifier classifier = new ArticleClassifier();
+    private  Scanner scanner = new Scanner(System.in);
 
     public List<Article> fetchArticles(String query) throws Exception {
         String urlString = "https://newsapi.org/v2/everything?q=" + query + "&apiKey=" + API_KEY;
@@ -95,21 +97,25 @@ public class NewsFetcher {
                 articles.add(article);
             }
         }
+
+        // Display the count of fetched articles
+        System.out.println("✅ Total articles fetched (Including duplicates): " + articles.size());
+
         classifier.shutdown();
 
         return articles;
     }
 
     // method to load newly fetched articles to the DB and program
-    public void loadInitialArticles(DatabaseManager dbManager, NewsRecommendationModel system, Scanner scanner) {
+    public void loadInitialArticles(DatabaseManager dbManager, NewsRecommendationModel system) {
         try {
-            System.out.println("Available categories: " + String.join(", ", classifier.CATEGORY_KEYWORDS.keySet()));
-            System.out.print("Enter a category type to fetch articles: ");
+            System.out.println("\uD83D\uDCDC Available categories: " + String.join(", ", classifier.CATEGORY_KEYWORDS.keySet()));
+            System.out.print("➡️ Enter a category type to fetch articles: ");
             String query = scanner.nextLine().trim().toLowerCase();
 
             // Validate input
             if (query.isEmpty()) {
-                System.out.println("Query cannot be empty. Please try again.");
+                System.out.println("❗️ Query cannot be empty. Please try again.");
                 return;
             }
 
@@ -117,7 +123,7 @@ public class NewsFetcher {
             for (String category : categories) {
                 category = category.trim();
                 if (!classifier.CATEGORY_KEYWORDS.keySet().contains(category)) {
-                    System.out.println("Invalid category: " + category + ". Please enter valid categories.");
+                    System.out.println("❌ Invalid category: " + category + ". Please enter valid categories.");
                     return;
                 }
             }

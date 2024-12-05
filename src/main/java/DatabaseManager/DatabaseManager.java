@@ -367,7 +367,7 @@ public class DatabaseManager {
 
         try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
             int rowsAffected = stmt.executeUpdate(sql);
-            System.out.println(rowsAffected + " duplicate articles removed.");
+            System.out.println("❌ " + rowsAffected + " duplicate articles removed.");
         } catch (SQLException e) {
             System.err.println("Error removing duplicate articles: " + e.getMessage());
         }
@@ -421,6 +421,24 @@ public class DatabaseManager {
             System.err.println("Error removing user from the database: " + e.getMessage());
         }
     }
+
+    // Method to get the total count of articles in the database
+    public int getArticleCount() {
+        String sql = "SELECT COUNT(*) AS total FROM articles";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching article count: " + e.getMessage());
+        }
+        return 0; // Return 0 if an error occurs
+    }
+
+
+
 
 
 }

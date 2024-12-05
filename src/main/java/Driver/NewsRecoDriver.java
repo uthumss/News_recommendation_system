@@ -3,7 +3,6 @@ package Driver;
 import java.util.*;
 
 import DatabaseManager.DatabaseManager;
-import Models.NewsFetcher;
 import Models.NewsRecommendationModel;
 import Service.DatabaseService;
 import Service.UserManagement;
@@ -12,7 +11,6 @@ import Service.UserManagement;
 public class NewsRecoDriver {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        NewsFetcher newsFetcher = new NewsFetcher();
         DatabaseManager dbManager = new DatabaseManager();
         DatabaseService dbService = new DatabaseService();
         NewsRecommendationModel system = new NewsRecommendationModel(4);
@@ -36,14 +34,14 @@ public class NewsRecoDriver {
                 userManager.clearConsole();
 
                 if (command == 1) {
-                    dbService.createAccount(system, dbManager, scanner);
+                    userManager.createAccount(system, dbManager);
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(3000);
                     } catch (InterruptedException e) {
                         System.out.println("‼️ Timer interrupted: " + e.getMessage());
                     }
                 } else if (command == 2) {
-                    userManager.login(system, dbManager, scanner, newsFetcher, dbService);
+                    userManager.login(system, dbManager, dbService);
                 } else if (command == 3) {
                     System.out.println("\uD83D\uDED1 Exiting application...");
                     break;
@@ -51,7 +49,7 @@ public class NewsRecoDriver {
                     System.out.println("❗ Invalid command, try again.");
                     try {
                         Thread.sleep(2000);
-                    } catch (Exception e2){
+                    } catch (InterruptedException e2){
                         System.out.println("‼️ Timer interrupted: " + e2.getMessage());
                     }
                 }
