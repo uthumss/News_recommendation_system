@@ -221,7 +221,7 @@ public class DatabaseManager {
             pstmt.setString(1, username);
             pstmt.setString(2, category);
             pstmt.executeUpdate();
-            System.out.println("Preference for category '" + category + "' deleted ");
+            System.out.println("✅ Preference for category '" + category + "' deleted ");
         } catch (SQLException e) {
             System.err.println("Error deleting preference: " + e.getMessage());
         }

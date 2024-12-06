@@ -67,7 +67,8 @@ public class UserManagement {
                             break; // Stop adding if the limit is reached
                         } else {
                             user.addPreferredCategory(category); // Add the category to user preferences
-                            System.out.println("Added category: " + category);
+                            System.out.println("✅ Added category: " + category);
+                            timer(2000);
                             user.syncToDatabase(dbManager); // Sync changes
                         }
                     }
@@ -93,6 +94,7 @@ public class UserManagement {
                     } else {
                         user.removePreferredCategory(category); // Remove the category from preferences
                         user.syncToDatabase(dbManager); // Sync changes
+                        timer(2000);
                     }
 
 

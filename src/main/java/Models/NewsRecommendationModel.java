@@ -213,6 +213,7 @@ public class NewsRecommendationModel {
 
         if (user.getPreferences().isEmpty()) {
             System.out.println("❌ No preferences set. Please update your preferences first");
+            userManager.timer(2000);
             userManager.manageProfile(user, dbManager);
             return;
         }
@@ -228,7 +229,7 @@ public class NewsRecommendationModel {
 
             if (recommendations.isEmpty()) {
                 System.out.println("❌ No recommendations available");
-                Thread.sleep(2000);
+                userManager.timer(2000);
                 return;
             }
 
@@ -237,7 +238,7 @@ public class NewsRecommendationModel {
             while (currentIndex < recommendations.size()) {
                 userManager.clearConsole();
 
-                System.out.println("Recommendations ⬇\uFE0F");
+                System.out.println("Recommendations ⬇️");
 
                 // Show 3 recommendations at a time
                 for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
@@ -260,7 +261,7 @@ public class NewsRecommendationModel {
                             dbService.handleArticleInteraction(user, selectedArticle, dbManager);
                         } else {
                             System.out.println("❗ Invalid selection. Try again.");
-                            Thread.sleep(2000);
+                            userManager.timer(2000);
                         }
                     } else if (action == 4) {
                         for (int i = 0; i < 3 && currentIndex + i < recommendations.size(); i++) {
