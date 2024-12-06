@@ -6,7 +6,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import DatabaseManager.DatabaseManager;
-import Service.UserManagement;
 import Templates.Article;
 import org.json.JSONArray;
 import org.json.JSONObject;

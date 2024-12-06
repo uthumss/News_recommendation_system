@@ -53,32 +53,44 @@ public class ArticleClassifier {
 
     // Concurrently calculate scores for all categories
     private Map<String, Integer> getConcurrentCategoryScores(String description) {
+        // Create a thread-safe map to store scores for each category
         Map<String, Integer> categoryScores = new ConcurrentHashMap<>();
+
+        // Create a list of tasks to process each category's keywords concurrently
         List<Callable<Void>> tasks = new ArrayList<>();
 
+        // loop over all categories and their associated keywords
         for (Map.Entry<String, String[]> entry : CATEGORY_KEYWORDS.entrySet()) {
-            String category = entry.getKey();
-            String[] keywords = entry.getValue();
+            String category = entry.getKey(); // The current category name
+            String[] keywords = entry.getValue(); // The keywords associated with this category
 
+            // Create a task for the current category
             tasks.add(() -> {
-                int score = 0;
+                int score = 0; // Initialize the score for this category
                 String lowerCaseDescription = description.toLowerCase();
+
+                // Check each keyword to see if it appears in the description
                 for (String keyword : keywords) {
                     if (lowerCaseDescription.contains(keyword)) {
-                        score++;
+                        score++; // Increment for each match
                     }
                 }
+
+                // Store the score in the thread-safe map
                 categoryScores.put(category, score);
                 return null;
             });
         }
 
         try {
+            // Execute all the tasks in parallel using the executor service
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
+            // If something goes wrong during parallel execution
             System.err.println("Error during concurrent classification: " + e.getMessage());
         }
 
+        // Return the map containing scores for each category
         return categoryScores;
     }
 

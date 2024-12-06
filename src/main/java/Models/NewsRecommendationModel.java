@@ -38,9 +38,15 @@ public class NewsRecommendationModel {
 
     // To recommend articles for a user based on their preferences and interactions with articles
     public Future<List<Article>> recommendArticles(User user) {
+        // Use executorService to asynchronously compute recommendations
         return executorService.submit(() -> {
+            // List to store recommended articles
             List<Article> recommendations = new ArrayList<>();
+
+            // Map to store term frequencies for vocabulary building
             Map<String, Integer> termFrequency = new HashMap<>();
+
+            // Set to store the vocabulary of unique terms across all articles
             Set<String> vocabulary = new HashSet<>();
 
             // Load user preferences and skipped articles from the database
@@ -169,7 +175,7 @@ public class NewsRecommendationModel {
         return (v1.dotProduct(v2)) / (v1.getNorm() * v2.getNorm());
     }
 
-    // Helper method to fetch articles by IDs
+    // helper method to fetch articles by IDs
     private List<Article> getArticlesByIds(List<String> articleIds) {
         List<Article> result = new ArrayList<>();
         for (String id : articleIds) {

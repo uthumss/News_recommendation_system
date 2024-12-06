@@ -109,19 +109,4 @@ public class User {
     }
 
 
-
-    // Method to open an article link in browser
-    public void openLinkInBrowser(String url) {
-        try {
-            Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                URI uri = new URI(url);
-                desktop.browse(uri); // Opens the link in the default browser
-            } else {
-                System.out.println("Opening browser is not supported on this system.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error opening link: " + e.getMessage());
-        }
-    }
 }

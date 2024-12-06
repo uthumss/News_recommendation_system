@@ -9,16 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseManager {
+
+    // Establish a connection to the SQLite database
     private Connection connect() throws SQLException {
         return DriverManager.getConnection("jdbc:sqlite:news.db");
     }
 
-    // Save user to the database
+    // Save a new user to the database
     public void saveUser(String username, String password, String role) {
+        // SQL query to insert a new user if the username doesn't already exist
         String sql = "INSERT OR IGNORE INTO users(username, password, role) VALUES(?, ?, ?)";
 
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // placeholders set with the username, password, and role
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             pstmt.setString(3, role);
@@ -35,16 +39,19 @@ public class DatabaseManager {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
             ResultSet rs = pstmt.executeQuery();
+
+            // If the count is greater than 0, the username is already taken
             if (rs.next()) {
                 return rs.getInt(1) > 0; // Return true if the count is greater than 0
             }
         } catch (SQLException e) {
             System.err.println("Error checking username existence: " + e.getMessage());
         }
-        return false; // Return false if an error occurs
+        // If any error occurs, assume the username is not taken
+        return false;
     }
 
-    // Select all users
+    // Fetch all regular users (excluding admins) from the database
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT username, password FROM users WHERE role = 'user'"; // Select only regular users
@@ -53,7 +60,7 @@ public class DatabaseManager {
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
-            // Iterate through the result set and create User objects
+            // loop through the result set and create User objects
             while (rs.next()) {
                 String username = rs.getString("username");
                 String password = rs.getString("password");
@@ -66,10 +73,10 @@ public class DatabaseManager {
         } catch (SQLException e) {
             System.err.println("Error fetching users: " + e.getMessage());
         }
-        return users;
+        return users; // Return the list of users
     }
 
-    // Authenticate user
+    // Authenticate a user by checking their credentials in the database
     public User authenticateUser(String username, String password) {
         String sql = "SELECT role FROM users WHERE username = ? AND password = ?";
         try (Connection conn = connect();
@@ -79,6 +86,7 @@ public class DatabaseManager {
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
+                // Check the role of the user and create an Admin or User object accordingly
                 String role = rs.getString("role");
                 if (role.equalsIgnoreCase("admin")) {
                     Admin admin = new Admin(username, password);
@@ -436,9 +444,5 @@ public class DatabaseManager {
         }
         return 0; // Return 0 if an error occurs
     }
-
-
-
-
 
 }

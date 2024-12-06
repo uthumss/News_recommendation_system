@@ -30,7 +30,7 @@ public class NewsRecoDriver {
                 System.out.print(">");
 
                 int command = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
                 userManager.clearConsole();
 
                 if (command == 1) {
@@ -60,7 +60,7 @@ public class NewsRecoDriver {
                 } catch (Exception e1){
                     System.out.println("‼️ Timer interrupted: " + e1.getMessage());
                 }
-                scanner.nextLine(); // Clear the invalid input
+                scanner.nextLine();
             }
         }
         scanner.close();

@@ -17,18 +17,21 @@ public class DatabaseService {
     public void handleArticleInteraction(User user, Article article, DatabaseManager dbManager) {
         // Open the link in the default browser
         System.out.println("Opening article in browser...");
-        user.openLinkInBrowser(article.getLink());
+        userManager.openLinkInBrowser(article.getLink());
 
         while (true) {
             try {
                 userManager.clearConsole();
+
+                // Display interaction options to the user
                 System.out.println("Options ⬇️ - " + article.getTitle());
                 System.out.println("❤️ 1-Like");
                 System.out.println("↩️ 2-Return to Recommendations");
                 System.out.print("> ");
                 int action = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
 
+                // User chooses to like the article
                 if (action == 1) {
                     user.addLikedArticle(article.getId());
                     user.syncToDatabase(dbManager); // Sync changes
@@ -36,6 +39,7 @@ public class DatabaseService {
                     Thread.sleep(2000);
                     userManager.clearConsole();
 
+                    /// Handle nested user choice
                     System.out.println("Options ⬇️ - " + article.getTitle());
                     System.out.println("\uD83D\uDC94 1-Dislike");
                     System.out.println("↩️ 2-Return to Recommendations");
@@ -43,6 +47,7 @@ public class DatabaseService {
                     int action1 = scanner.nextInt();
                     scanner.nextLine();
 
+                    // Handle nested user choice
                     while(true) {
                         try {
                             if (action1 == 1) {
@@ -59,7 +64,7 @@ public class DatabaseService {
                             System.out.println("Invalid input. Please enter a valid number.");
                         }
                     }
-                    break; // Exit after
+                    break; // Exit main loop after action is completed
                 } else if (action == 2) {
                     user.addReadArticle(user.getUsername(),article.getId()); // Update in memory
                     System.out.println("Returning to recommendations...");
@@ -68,13 +73,9 @@ public class DatabaseService {
                 } else {
                     System.out.println("Invalid choice. Please enter 1 or 2.");
                 }
-            } catch (Exception e) {
+            } catch (Exception e) { // Handle input exceptions
                 System.out.println("Invalid input. Please enter a valid number.");
-                try {
-                    Thread.sleep(2000);
-                } catch (Exception e1){
-                    System.out.println("‼️ Timer interrupted: " + e1.getMessage());
-                }
+                userManager.timer(2000);
                 scanner.nextLine(); // Clear the invalid input
             }
         }
@@ -87,6 +88,8 @@ public class DatabaseService {
 
             // Ensure no duplicate articles are added to the system
             Set<String> seenTitles = new HashSet<>();
+
+            // Add articles to the system, ensuring no duplicates
             for (Article article : articles) {
                 if (!seenTitles.contains(article.getTitle())) {
                     system.addArticle(article);
@@ -95,7 +98,7 @@ public class DatabaseService {
             }
 
             System.out.println("Articles loaded successfully into the system.");
-        } catch (Exception e) {
+        } catch (Exception e) { // Handle exceptions during article loading
             System.err.println("Error loading articles: " + e.getMessage());
         }
     }

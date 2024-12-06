@@ -1,13 +1,14 @@
 package Service;
 
 import DatabaseManager.DatabaseManager;
-import Models.ArticleClassifier;
 import Models.NewsFetcher;
 import Models.NewsRecommendationModel;
 import Templates.Admin;
 import Templates.Article;
 import Templates.User;
 
+import java.awt.*;
+import java.net.URI;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,20 +19,19 @@ public class UserManagement {
     // Method to call when user chooses to manage profile from the user menu
     public void manageProfile(User user, DatabaseManager dbManager) {
         while (true) {
-            clearConsole();
+            clearConsole(); // Clear the console for a clean UI
             System.out.println("Manage Profile:");
             System.out.println("1 - Add Preferred Category");
             System.out.println("2 - Remove Preferred Category");
             System.out.println("3 - View Liked Articles");
             System.out.println("4 - Back to User Menu");
             System.out.print("➡️ Enter your choice: ");
-//            int choice = scanner.nextInt();
-//            scanner.nextLine(); // Consume newline
 
-            if (scanner.hasNextInt()) {
+            if (scanner.hasNextInt()) { // Check if the user entered a valid integer
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-                if (choice == 1) {
+                scanner.nextLine();
+
+                if (choice == 1) {// Add preferred categories
                     clearConsole();
                     // Show the user valid categories and their current preferences
                     System.out.println("\uD83D\uDCC3 Your Current Preferences: " + user.getPreferences());
@@ -42,15 +42,17 @@ public class UserManagement {
                         continue;
                     }
 
+                    // Show all valid categories to the user
                     System.out.println("\uD83D\uDCDC Valid Categories: " + newsFetcher.classifier.CATEGORY_KEYWORDS.keySet());
                     System.out.println("You can only add up to 3 categories.");
                     System.out.println();
 
-
+                    // Prompt the user to input categories to add
                     System.out.print("➡️ Enter categories to add (comma-separated if multiple):");
                     String input = scanner.nextLine().trim().toLowerCase();
                     String[] categoriesToAdd = input.split(",");
 
+                    // Iterate over the input categories to validate and add them
                     for (String category : categoriesToAdd) {
                         category = category.trim();
                         if (!newsFetcher.classifier.CATEGORY_KEYWORDS.keySet().contains(category)) {
@@ -62,9 +64,9 @@ public class UserManagement {
                         } else if (user.getPreferences().size() >= 3) {
                             System.out.println("❗Cannot add more categories. Limit reached.");
                             timer(2000);
-                            break;
+                            break; // Stop adding if the limit is reached
                         } else {
-                            user.addPreferredCategory(category);
+                            user.addPreferredCategory(category); // Add the category to user preferences
                             System.out.println("Added category: " + category);
                             user.syncToDatabase(dbManager); // Sync changes
                         }
@@ -73,6 +75,7 @@ public class UserManagement {
 
                 } else if (choice == 2) {
                     clearConsole();
+
                     // Show the user's current preferences
                     System.out.println("\uD83D\uDCC3 Your Current Preferences: " + user.getPreferences());
                     if (user.getPreferences().isEmpty()) {
@@ -81,18 +84,19 @@ public class UserManagement {
                         continue;
                     }
 
+                    // Prompt the user to input a category to remove
                     System.out.print("➡️ Enter category to remove:");
                     String category = scanner.nextLine().trim().toLowerCase();
                     if (!user.getPreferences().contains(category)) {
                         System.out.println("❌ Category not found in your preferences: " + category);
                         timer(3000);
                     } else {
-                        user.removePreferredCategory(category);
+                        user.removePreferredCategory(category); // Remove the category from preferences
                         user.syncToDatabase(dbManager); // Sync changes
                     }
 
-                }  else if (choice == 3) {
-                    // Display liked articles
+
+                }  else if (choice == 3) {   // View liked articles
                     List<Article> likedArticles = dbManager.viewLikedArticles(user.getUsername());
                     if (likedArticles.isEmpty()) {
                         System.out.println("❌ You have no liked articles.");
@@ -100,17 +104,19 @@ public class UserManagement {
                     } else {
                         clearConsole();
                         System.out.println("Liked Articles:");
+                        // Display the list of liked articles
                         for (int i = 0; i < likedArticles.size(); i++) {
                             System.out.println((i + 1) + " - " + likedArticles.get(i).getTitle());
                         }
+                        // Allow the user to select an article to open or return to the menu
                         System.out.print("➡️Enter the number of the article to open its link, or 0 to go back:");
                         if (scanner.hasNextInt()) {
                             int articleChoice = scanner.nextInt();
-                            scanner.nextLine(); // Consume newline
+                            scanner.nextLine();
 
                             if (articleChoice > 0 && articleChoice <= likedArticles.size()) {
                                 Article selectedArticle = likedArticles.get(articleChoice - 1);
-                                user.openLinkInBrowser(selectedArticle.getLink());
+                                openLinkInBrowser(selectedArticle.getLink());
                             } else if (articleChoice == 0) {
                                 System.out.println("Returning to Manage Profile...");
                                 timer(2000);
@@ -136,8 +142,6 @@ public class UserManagement {
                 scanner.nextLine(); // Clear the invalid input
                 timer(2000);
             }
-
-
         }
     }
 
@@ -168,6 +172,7 @@ public class UserManagement {
                 continue;
             }
 
+            // Check if the inputs are ampty
             if(!username.isEmpty() && !password.isEmpty()){
                 User user = new User(username, password);
                 user.setDatabaseManager(dbManager); // Set DatabaseManager for User
@@ -211,11 +216,7 @@ public class UserManagement {
         User user = dbManager.authenticateUser(username, password);
         if (user == null) {
             System.out.println("❗ Invalid login credentials.");
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                System.out.println("‼️ Timer interrupted: " + e.getMessage());
-            }
+                timer(2000);
             return;
         }
 
@@ -231,7 +232,7 @@ public class UserManagement {
     // Admin menu method
     public void adminMenu(Admin admin, NewsRecommendationModel system, DatabaseManager dbManager) {
         while (true) {
-            clearConsole();
+            clearConsole(); // Clear the console for a clean UI
             System.out.println("Welcome " + admin.getUsername() + "!");
             System.out.println();
             System.out.println("Admin Menu ⬇️");
@@ -241,9 +242,9 @@ public class UserManagement {
             System.out.println("\uD83D\uDD39 4 - Logout");
             System.out.print(">");
 
-            if (scanner.hasNextInt()) {
+            if (scanner.hasNextInt()) { // Validate input as an integer
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
 
                 if (choice == 1) {
                     List<User> users = dbManager.getAllUsers();
@@ -254,6 +255,8 @@ public class UserManagement {
                         clearConsole();
                         System.out.println("♟ All Registered Users");
                         System.out.println();
+
+                        // Display all registered users
                         for (User user : users) {
                             System.out.println(" - " + user.getUsername());
                         }
@@ -264,7 +267,7 @@ public class UserManagement {
                         admin.removeUser(users, username);
                         timer(2000);
                     }
-                } else if (choice == 2) {
+                } else if (choice == 2) { // Remove Article
                     clearConsole();
 
                     // Get total number of articles
@@ -275,6 +278,7 @@ public class UserManagement {
                         continue;
                     }
 
+                    // Display total number of articles
                     System.out.println("\uD83D\uDCF0 Total number of articles: " + totalArticles);
                     System.out.print("➡️ Enter article ID to delete:");
                     String articleId = scanner.nextLine();
@@ -288,6 +292,7 @@ public class UserManagement {
                         String confirmation = scanner.nextLine().trim().toLowerCase();
 
                         if (confirmation.equals("yes")) {
+                            // Call admin's method to delete the article
                             admin.deleteArticle(system.getArticles(), articleId);
                             timer(2000);
                         } else {
@@ -298,18 +303,18 @@ public class UserManagement {
                         System.out.println("❌ Article not found with ID: " + articleId);
                         timer(2000);
                     }
-                } else if (choice == 3) {
+                } else if (choice == 3) { // Fetch More Articles
                     clearConsole();
                     newsFetcher.loadInitialArticles(dbManager, system);
                     timer(3000);
                 } else if (choice == 4) {
                     System.out.println("Logging out...");
                     break;
-                } else {
+                } else { // Notify admin of an invalid choice
                     System.out.println("❗Invalid option.");
                     timer(2000);
                 }
-            } else {
+            } else { // Handle invalid input
                 System.out.println("❗ Invalid input. Please enter a number.");
                 scanner.nextLine(); // Clear the invalid input
                 timer(2000);
@@ -369,6 +374,21 @@ public class UserManagement {
             Thread.sleep(milisecs);
         } catch (InterruptedException e) {
             System.out.println("‼️ Timer interrupted: " + e.getMessage());
+        }
+    }
+
+    // Method to open an article link in browser
+    public void openLinkInBrowser(String url) {
+        try {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                URI uri = new URI(url);
+                desktop.browse(uri); // Opens the link in the default browser
+            } else {
+                System.out.println("Opening browser is not supported on this system.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error opening link: " + e.getMessage());
         }
     }
 
