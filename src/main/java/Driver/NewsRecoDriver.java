@@ -19,9 +19,13 @@ public class NewsRecoDriver {
         // Load all articles from database
         dbService.loadArticlesFromDB(dbManager, system);
 
+        // Main application loop
         while (true) {
             try {
+                // Clear the console for a clean UI
                 userManager.clearConsole();
+
+                // Display main menu options
                 System.out.println("Enter Command ⬇️");
                 System.out.println();
                 System.out.println("\uD83D\uDD39 1 for Create Account");
@@ -33,33 +37,22 @@ public class NewsRecoDriver {
                 scanner.nextLine();
                 userManager.clearConsole();
 
-                if (command == 1) {
+                if (command == 1) { // To Create account
+                    // Handle account creation
                     userManager.createAccount(system, dbManager);
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        System.out.println("‼️ Timer interrupted: " + e.getMessage());
-                    }
-                } else if (command == 2) {
+                    userManager.timer(3000);
+                } else if (command == 2) { // To login
                     userManager.login(system, dbManager, dbService);
-                } else if (command == 3) {
+                } else if (command == 3) { // Exit program
                     System.out.println("\uD83D\uDED1 Exiting application...");
                     break;
-                } else {
+                } else { // Invalid
                     System.out.println("❗ Invalid command, try again.");
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e2){
-                        System.out.println("‼️ Timer interrupted: " + e2.getMessage());
-                    }
+                    userManager.timer(2000);
                 }
             } catch (InputMismatchException e) {
                 System.out.println("❗ Invalid input. Please enter a number");
-                try {
-                    Thread.sleep(2000);
-                } catch (Exception e1){
-                    System.out.println("‼️ Timer interrupted: " + e1.getMessage());
-                }
+                userManager.timer(2000);
                 scanner.nextLine();
             }
         }
